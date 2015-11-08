@@ -1,0 +1,37 @@
+package followTheChampions.models;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "Competition")
+public class Competition extends BasicEntity  {
+
+    @Column(name = "name")
+    @NotEmpty
+    String name;
+
+    @Column(name = "region")
+    @NotEmpty
+    String region;
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+}
