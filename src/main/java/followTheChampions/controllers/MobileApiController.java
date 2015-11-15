@@ -1,6 +1,11 @@
 package followTheChampions.controllers;
 
+import com.google.common.collect.Lists;
+import followTheChampions.dao.*;
 import followTheChampions.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -8,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,83 +23,121 @@ import java.util.List;
 @RestController
 public class MobileApiController {
 
+    @Autowired
+    CompetitionRepository competitionRepository;
+
+    @Autowired
+    FavouritedMatchRepository favouritedMatchRepository;
+
+    @Autowired
+    FavouritedTeamRepository favouritedTeamRepository;
+
+    @Autowired
+    MatchRepository matchRepository;
+
+    @Autowired
+    MatchEventRepository matchEventRepository;
+
+    @Autowired
+    RegisteredDeviceRepository registeredDeviceRepository;
+
+    @Autowired
+    StandingRepository standingRepository;
+
+    @Autowired
+    TeamRepository teamRepository;
+
+    private final static Logger logger = LoggerFactory
+            .getLogger(MobileApiController.class);
+
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String index() {
-        return "Greetings from Spring Boot!";
+        return "Greetings from Follow The Champions!";
     }
 
     @RequestMapping("/registerDevice")
-    public ResponseEntity<String> registerDevice() {
-        ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    public ResponseEntity<String> registerDevice(String deviceToken) {
+        ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.OK);
         return response;
     }
 
     @RequestMapping("/competitionData")
     public @ResponseBody Competition competitionData() {
-        Competition sampleLeague = new Competition();
-        sampleLeague.setId(1204L);
-        sampleLeague.setName("Premier League");
-        sampleLeague.setRegion("England");
-
-        return sampleLeague;
+        return competitionRepository.getById(1L);
     }
 
     @RequestMapping("/searchForTeams")
-    public @ResponseBody List<Team> searchForTeams() {
-        LinkedList<Team> teams = new LinkedList<Team>();
-        teams.add(new Team());
-        return teams;
+    public @ResponseBody Iterable<Team> searchForTeams() {
+        return teamRepository.findAll();
     }
 
     @RequestMapping("/addFavouritedTeam")
-    public ResponseEntity<String> addFavouritedTeam() {
-        ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    public ResponseEntity<String> addFavouritedTeam(String deviceToken, String teamId) {
+
+        RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
+        Team team = teamRepository.getById( new Long(teamId) );
+
+        FavouritedTeam favouritedTeam = new FavouritedTeam();
+        favouritedTeam.setRegisteredDevice(registeredDevice);
+        favouritedTeam.setTeam(team);
+        favouritedTeamRepository.save(favouritedTeam);
+
+        ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.OK);
         return response;
     }
 
     @RequestMapping("/removeFavouritedTeam")
-    public ResponseEntity<String>  removeFavouritedTeam() {
-        ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    public ResponseEntity<String>  removeFavouritedTeam(String deviceToken, String teamId) {
+
+
+        ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.OK);
         return response;
     }
 
     @RequestMapping("/getFavouritedTeams")
-    public @ResponseBody List<FavouritedTeam> getFavouritedTeams() {
-        LinkedList<FavouritedTeam> favouritedTeams= new LinkedList<>();
-        favouritedTeams.add(new FavouritedTeam());
-        return favouritedTeams;
+    public @ResponseBody List<FavouritedTeam> getFavouritedTeams(String deviceToken) {
+
+        RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
+
+        return favouritedTeamRepository.getByRegisteredDevice(registeredDevice);
     }
 
     @RequestMapping("/searchForMatches")
-    public @ResponseBody List<Match> searchForMatches() {
-        LinkedList<Match> matches= new LinkedList<>();
-        matches.add(new Match());
-        return matches;
+    public @ResponseBody Iterable<Match> searchForMatches() {
+        return matchRepository.findAll();
     }
 
     @RequestMapping("/addFavouritedMatch")
-    public ResponseEntity<String> addFavouritedMatch() {
+    public ResponseEntity<String> addFavouritedMatch(String deviceToken, String matchId) {
+        RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
+        Match match = matchRepository.getById( new Long(matchId) );
+
+        FavouritedMatch favouritedMatch = new FavouritedMatch();
+        favouritedMatch.setRegisteredDevice(registeredDevice);
+        favouritedMatch.setMatch(match);
+        favouritedMatchRepository.save(favouritedMatch);
+
+
         ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.OK);
         return response;
     }
 
     @RequestMapping("/removeFavouritedMatch")
-    public ResponseEntity<String> removeFavouritedMatch() {
+    public ResponseEntity<String> removeFavouritedMatch(String deviceToken, String matchId) {
         ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.OK);
         return response;
     }
 
     @RequestMapping("/getFavouritedMatches")
-    public @ResponseBody List<FavouritedMatch> getFavouritedMatches() {
-        LinkedList<FavouritedMatch> favouritedMatches= new LinkedList<>();
-        favouritedMatches.add(new FavouritedMatch());
-        return favouritedMatches;
+    public @ResponseBody Iterable<FavouritedMatch> getFavouritedMatches(String deviceToken) {
+
+        RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
+
+        return favouritedMatchRepository.getByRegisteredDevice(registeredDevice);
     }
 
     @RequestMapping("/getStandings")
-    public @ResponseBody List<Standing> getStandings() {
-        LinkedList<Standing> standings= new LinkedList<>();
-        standings.add(new Standing());
-        return standings;
+    public @ResponseBody Iterable<Standing> getStandings() {
+        return standingRepository.findAll();
     }
 }

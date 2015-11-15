@@ -4,6 +4,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.joda.time.DateTime;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "Match")
@@ -14,19 +15,15 @@ public class Match extends BasicEntity {
     Competition competition;
 
     @Column(name = "matchDate")
-    @NotEmpty
-    DateTime matchDate;
+    Date matchDate;
 
     @Column(name = "status")
-    @NotEmpty
     String status;
 
     @Column(name = "time")
-    @NotEmpty
     String time;
 
     @Column(name = "isCommentaryAvailable")
-    @NotEmpty
     Boolean isCommentaryAvailable;
 
     @ManyToOne
@@ -34,20 +31,16 @@ public class Match extends BasicEntity {
     Team localTeam;
 
     @Column(name = "localTeamScore")
-    @NotEmpty
     String localTeamScore;
 
     @ManyToOne
     @JoinColumn(name = "visitorTeam")
-    @NotEmpty
     Team visitorTeam;
 
     @Column(name = "visitorTeamScore")
-    @NotEmpty
     String visitorTeamScore;
 
     @Column(name = "matchHtScore")
-    @NotEmpty
     String matchHtScore;
 
     public String getMatchHtScore() {
@@ -66,11 +59,11 @@ public class Match extends BasicEntity {
         this.competition = competition;
     }
 
-    public DateTime getMatchDate() {
+    public Date getMatchDate() {
         return matchDate;
     }
 
-    public void setMatchDate(DateTime matchDate) {
+    public void setMatchDate(Date matchDate) {
         this.matchDate = matchDate;
     }
 

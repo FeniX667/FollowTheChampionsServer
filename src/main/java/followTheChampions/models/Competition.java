@@ -11,11 +11,9 @@ import javax.persistence.Table;
 public class Competition extends BasicEntity  {
 
     @Column(name = "name")
-    @NotEmpty
     String name;
 
     @Column(name = "region")
-    @NotEmpty
     String region;
 
     public String getRegion() {
@@ -34,4 +32,10 @@ public class Competition extends BasicEntity  {
         this.name = name;
     }
 
+    @Override
+    public String toString() {
+        return String.format(
+                "Competition[id=%d, name='%s', region='%s']",
+                id, name, region);
+    }
 }

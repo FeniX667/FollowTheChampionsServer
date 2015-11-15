@@ -6,17 +6,17 @@ import org.joda.time.DateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.util.Date;
 
 @Entity
 @Table(name = "RegisteredDevice")
 public class RegisteredDevice extends BasicEntity {
 
     @Column(name = "deviceToken")
-    @NotEmpty
     String deviceToken;
 
     @Column(name = "registrationDate")
-    DateTime registrationDate;
+    Date registrationDate;
 
     @Column(name = "isActive")
     Boolean isActive;
@@ -29,11 +29,11 @@ public class RegisteredDevice extends BasicEntity {
         this.deviceToken = deviceToken;
     }
 
-    public DateTime getRegistrationDate() {
+    public Date getRegistrationDate() {
         return registrationDate;
     }
 
-    public void setRegistrationDate(DateTime registrationDate) {
+    public void setRegistrationDate(Date registrationDate) {
         this.registrationDate = registrationDate;
     }
 

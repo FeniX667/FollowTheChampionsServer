@@ -1,14 +1,17 @@
 package followTheChampions.dao;
 
-import followTheChampions.models.Competition;
 import followTheChampions.models.FavouritedMatch;
+import followTheChampions.models.FavouritedTeam;
+import followTheChampions.models.RegisteredDevice;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Created by Malar on 2015-11-15.
- */
-@Transactional
-public interface FavouritedMatchRepository extends BasicJpaRepository<FavouritedMatch, Long> {
+import java.util.List;
 
-    Competition getById(Long id);
+@Transactional
+public interface FavouritedMatchRepository extends CrudRepository<FavouritedMatch, Long> {
+
+    FavouritedMatch getById(Long id);
+
+    List<FavouritedMatch> getByRegisteredDevice(RegisteredDevice registeredDevice);
 }

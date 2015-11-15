@@ -1,14 +1,11 @@
 package followTheChampions.dao;
 
-import followTheChampions.models.Competition;
 import followTheChampions.models.Standing;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Created by Malar on 2015-11-15.
- */
 @Transactional
-public interface StandingRepository extends BasicJpaRepository<Standing, Long> {
+public interface StandingRepository extends CrudRepository<Standing, Long> {
 
-    Competition getById(Long id);
+    Standing getById(Long id);
 }

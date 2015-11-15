@@ -6,7 +6,7 @@
     <groupId>planeta.solskiego</groupId>
     <artifactId>follow-the-champions</artifactId>
     <version>0.1.0</version>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -55,6 +55,12 @@
             <artifactId>h2</artifactId>
             <version>1.1.102</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+        </dependency>
+
     </dependencies>
 
     <properties>
