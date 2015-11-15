@@ -9,7 +9,7 @@ public class HelloController {
     @RequestMapping("/")
     public String index() {
 
-        return "Go to /mobile";
+        return "Greetings from Spring Boot!";
     }
     
 }
