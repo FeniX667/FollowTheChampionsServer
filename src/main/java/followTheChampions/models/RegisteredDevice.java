@@ -10,7 +10,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "RegisteredDevice")
-public class RegisteredDevice extends BasicEntity {
+public class RegisteredDevice extends AutomatedEntity {
 
     @Column(name = "deviceToken")
     String deviceToken;

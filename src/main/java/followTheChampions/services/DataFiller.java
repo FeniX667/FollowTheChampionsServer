@@ -61,39 +61,45 @@ public class DataFiller {
         registeredDevices.get(0).setIsActive(Boolean.TRUE);
         registeredDevices.get(0).setDeviceToken("demoToken");
 
-        logger.info(registeredDevices.get(0).getRegistrationDate().toString());
+        registeredDevices.add(1,new RegisteredDevice());
+        registeredDevices.get(1).setRegistrationDate(DateTime.now().toDate());
+        registeredDevices.get(1).setIsActive(Boolean.TRUE);
+        registeredDevices.get(1).setDeviceToken("demoToken1");
 
         for(RegisteredDevice registeredDevice : registeredDevices){
             registeredDeviceRepository.save(registeredDevice);
         }
 
+        registeredDevices.forEach(registeredDeviceRepository::save);
+
         ////////////////////////////////////////////////////////////////
 
         competitions.add(0,new Competition());
+        competitions.get(0).setId(1024L);
         competitions.get(0).setName("England");
         competitions.get(0).setRegion("Premier League");
 
-        for(Competition competition : competitions){
-            competitionRepository.save(competition);
-        }
+        competitions.forEach(competitionRepository::save);
 
         /////////////////////////////////////////////////////////////////
 
         teams.add(0,new Team());
-        teams.get(0).setName("Arsenal FC");
+        teams.get(0).setId(12049240L);
+        teams.get(0).setName("Leicester");
 
         teams.add(1,new Team());
-        teams.get(1).setName("Chelsea FC");
+        teams.get(1).setId(12049260L);
+        teams.get(1).setName("Manchester United");
 
         teams.add(2,new Team());
-        teams.get(2).setName("Liverpool");
+        teams.get(2).setId(12049259L);
+        teams.get(2).setName("Manchester City");
 
-        for(Team team : teams){
-            teamRepository.save(team);
-        }
+        teams.forEach(teamRepository::save);
         //////////////////////////////////////////////////////////////////
 
         matches.add(0,new Match());
+        matches.get(0).setId(1L);
         matches.get(0).setCompetition( competitionRepository.getById(1L) );
         matches.get(0).setMatchDate(DateTime.now().toDate());
         matches.get(0).setStatus("END");
@@ -106,6 +112,7 @@ public class DataFiller {
         matches.get(0).setMatchHtScore("3:2");
 
         matches.add(1,new Match());
+        matches.get(1).setId(2L);
         matches.get(1).setCompetition( competitionRepository.getById(1L) );
         matches.get(1).setMatchDate(DateTime.now().toDate());
         matches.get(1).setStatus("END");
@@ -118,6 +125,7 @@ public class DataFiller {
         matches.get(1).setMatchHtScore("0:0");
 
         matches.add(2,new Match());
+        matches.get(2).setId(3L);
         matches.get(2).setCompetition( competitionRepository.getById(1L) );
         matches.get(2).setMatchDate(DateTime.now().toDate());
         matches.get(2).setStatus("END");
@@ -129,19 +137,27 @@ public class DataFiller {
         matches.get(2).setVisitorTeamScore("2");
         matches.get(2).setMatchHtScore("1:2");
 
-        for(Match match : matches){
-            matchRepository.save(match);
-        }
+        matches.forEach(matchRepository::save);
 
         //////////////////////////////////////////////////////////////////////////
 
         favouritedTeams.add(0,new FavouritedTeam());
         favouritedTeams.get(0).setRegisteredDevice( registeredDeviceRepository.getById(1L) );
-        favouritedTeams.get(0).setTeam( teamRepository.getById(3L));
+        favouritedTeams.get(0).setTeam( teamRepository.getById(1L));
 
-        for(FavouritedTeam favouritedTeam : favouritedTeams){
-            favouritedTeamRepository.save(favouritedTeam);
-        }
+        favouritedTeams.add(1,new FavouritedTeam());
+        favouritedTeams.get(1).setRegisteredDevice( registeredDeviceRepository.getById(1L) );
+        favouritedTeams.get(1).setTeam( teamRepository.getById(2L));
+
+        favouritedTeams.add(2,new FavouritedTeam());
+        favouritedTeams.get(2).setRegisteredDevice( registeredDeviceRepository.getById(1L) );
+        favouritedTeams.get(2).setTeam( teamRepository.getById(3L));
+
+        favouritedTeams.add(3,new FavouritedTeam());
+        favouritedTeams.get(3).setRegisteredDevice( registeredDeviceRepository.getById(2L) );
+        favouritedTeams.get(3).setTeam( teamRepository.getById(3L));
+
+        favouritedTeams.forEach(favouritedTeamRepository::save);
 
         /////////////////////////////////////////////////////////////////////////
 
@@ -153,9 +169,7 @@ public class DataFiller {
         favouritedMatches.get(1).setRegisteredDevice( registeredDeviceRepository.getById(1L) );
         favouritedMatches.get(1).setMatch( matchRepository.getById(1L) );
 
-        for(FavouritedMatch favouritedMatch : favouritedMatches){
-            favouritedMatchRepository.save(favouritedMatch);
-        }
+        favouritedMatches.forEach(favouritedMatchRepository::save);
 
 
         logger.info("Baza danych zainicjowana");
