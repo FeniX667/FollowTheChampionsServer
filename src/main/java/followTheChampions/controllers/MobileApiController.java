@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -48,17 +49,11 @@ public class MobileApiController {
     @Autowired
     TeamRepository teamRepository;
 
-    @Autowired
-    FirstApiCaller firstApiCaller;
-
     private final static Logger logger = LoggerFactory
             .getLogger(MobileApiController.class);
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String index() {
-
-        firstApiCaller.callCompetition();
-        firstApiCaller.callStandings();
 
         return "Greetings from Follow The Champions!";
     }
@@ -121,7 +116,10 @@ public class MobileApiController {
 
     @RequestMapping("/searchForMatches")
     public @ResponseBody Iterable<Match> searchForMatches() {
-        return matchRepository.findAll();
+        logger.info("Searching for matches");
+        Iterable<Match> matches = matchRepository.findAll();
+
+        return matches;
     }
 
     @RequestMapping("/addFavouritedMatch")

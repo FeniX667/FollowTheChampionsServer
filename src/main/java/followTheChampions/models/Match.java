@@ -5,17 +5,14 @@ import org.joda.time.DateTime;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "Match")
 public class Match extends BasicEntity {
 
-    @ManyToOne
-    @JoinColumn(name = "competition")
-    Competition competition;
-
     @Column(name = "matchDate")
-    Date matchDate;
+    String matchDate;
 
     @Column(name = "status")
     String status;
@@ -23,25 +20,22 @@ public class Match extends BasicEntity {
     @Column(name = "time")
     String time;
 
-    @Column(name = "isCommentaryAvailable")
-    Boolean isCommentaryAvailable;
-
     @ManyToOne
     @JoinColumn(name = "localTeam")
     Team localTeam;
-
-    @Column(name = "localTeamScore")
-    String localTeamScore;
 
     @ManyToOne
     @JoinColumn(name = "visitorTeam")
     Team visitorTeam;
 
-    @Column(name = "visitorTeamScore")
-    String visitorTeamScore;
+    @OneToMany(mappedBy = "match")
+    List<MatchEvent> matchEventList;
 
     @Column(name = "matchHtScore")
     String matchHtScore;
+
+    @Column(name = "matchFtScore")
+    String matchFtScore;
 
     public String getMatchHtScore() {
         return matchHtScore;
@@ -51,19 +45,11 @@ public class Match extends BasicEntity {
         this.matchHtScore = matchHtScore;
     }
 
-    public Competition getCompetition() {
-        return competition;
-    }
-
-    public void setCompetition(Competition competition) {
-        this.competition = competition;
-    }
-
-    public Date getMatchDate() {
+    public String getMatchDate() {
         return matchDate;
     }
 
-    public void setMatchDate(Date matchDate) {
+    public void setMatchDate(String matchDate) {
         this.matchDate = matchDate;
     }
 
@@ -83,28 +69,12 @@ public class Match extends BasicEntity {
         this.time = time;
     }
 
-    public Boolean getIsCommentaryAvailable() {
-        return isCommentaryAvailable;
-    }
-
-    public void setIsCommentaryAvailable(Boolean isCommentaryAvailable) {
-        this.isCommentaryAvailable = isCommentaryAvailable;
-    }
-
     public Team getLocalTeam() {
         return localTeam;
     }
 
     public void setLocalTeam(Team localTeam) {
         this.localTeam = localTeam;
-    }
-
-    public String getLocalTeamScore() {
-        return localTeamScore;
-    }
-
-    public void setLocalTeamScore(String localTeamScore) {
-        this.localTeamScore = localTeamScore;
     }
 
     public Team getVisitorTeam() {
@@ -115,11 +85,19 @@ public class Match extends BasicEntity {
         this.visitorTeam = visitorTeam;
     }
 
-    public String getVisitorTeamScore() {
-        return visitorTeamScore;
+    public String getMatchFtScore() {
+        return matchFtScore;
     }
 
-    public void setVisitorTeamScore(String visitorTeamScore) {
-        this.visitorTeamScore = visitorTeamScore;
+    public void setMatchFtScore(String matchFtScore) {
+        this.matchFtScore = matchFtScore;
+    }
+
+    public List<MatchEvent> getMatchEventList() {
+        return matchEventList;
+    }
+
+    public void setMatchEventList(List<MatchEvent> matchEventList) {
+        this.matchEventList = matchEventList;
     }
 }

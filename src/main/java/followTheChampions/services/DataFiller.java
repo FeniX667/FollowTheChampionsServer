@@ -84,15 +84,15 @@ public class DataFiller {
         /////////////////////////////////////////////////////////////////
 
         teams.add(0,new Team());
-        teams.get(0).setId(12049240L);
+        teams.get(0).setId(9240L);
         teams.get(0).setName("Leicester");
 
         teams.add(1,new Team());
-        teams.get(1).setId(12049260L);
+        teams.get(1).setId(9260L);
         teams.get(1).setName("Manchester United");
 
         teams.add(2,new Team());
-        teams.get(2).setId(12049259L);
+        teams.get(2).setId(9259L);
         teams.get(2).setName("Manchester City");
 
         teams.forEach(teamRepository::save);
@@ -100,42 +100,33 @@ public class DataFiller {
 
         matches.add(0,new Match());
         matches.get(0).setId(1L);
-        matches.get(0).setCompetition( competitionRepository.getById(1L) );
-        matches.get(0).setMatchDate(DateTime.now().toDate());
+        matches.get(0).setMatchDate(DateTime.now().toString());
         matches.get(0).setStatus("END");
         matches.get(0).setTime("90:00");
-        matches.get(0).setIsCommentaryAvailable(Boolean.TRUE);
-        matches.get(0).setLocalTeam( teamRepository.getById(1L) );
-        matches.get(0).setLocalTeamScore("3");
-        matches.get(0).setVisitorTeam( teamRepository.getById(2L) );
-        matches.get(0).setVisitorTeamScore("2");
-        matches.get(0).setMatchHtScore("3:2");
+        matches.get(0).setLocalTeam( teamRepository.getById(9240L) );
+        matches.get(0).setVisitorTeam( teamRepository.getById(9260L) );
+        matches.get(0).setMatchHtScore("[2:2]");
+        matches.get(0).setMatchFtScore("[3:2]");
 
         matches.add(1,new Match());
         matches.get(1).setId(2L);
-        matches.get(1).setCompetition( competitionRepository.getById(1L) );
-        matches.get(1).setMatchDate(DateTime.now().toDate());
+        matches.get(1).setMatchDate(DateTime.now().toString());
         matches.get(1).setStatus("END");
         matches.get(1).setTime("90:00");
-        matches.get(1).setIsCommentaryAvailable(Boolean.TRUE);
-        matches.get(1).setLocalTeam( teamRepository.getById(2L) );
-        matches.get(1).setLocalTeamScore("0");
-        matches.get(1).setVisitorTeam( teamRepository.getById(3L) );
-        matches.get(1).setVisitorTeamScore("0");
+        matches.get(1).setLocalTeam( teamRepository.getById(9260L) );
+        matches.get(1).setVisitorTeam( teamRepository.getById(9259L) );
         matches.get(1).setMatchHtScore("0:0");
+        matches.get(1).setMatchFtScore("0:0");
 
         matches.add(2,new Match());
         matches.get(2).setId(3L);
-        matches.get(2).setCompetition( competitionRepository.getById(1L) );
-        matches.get(2).setMatchDate(DateTime.now().toDate());
+        matches.get(2).setMatchDate(DateTime.now().toString());
         matches.get(2).setStatus("END");
         matches.get(2).setTime("90:00");
-        matches.get(2).setIsCommentaryAvailable(Boolean.TRUE);
-        matches.get(2).setLocalTeam( teamRepository.getById(3L) );
-        matches.get(2).setLocalTeamScore("1");
-        matches.get(2).setVisitorTeam( teamRepository.getById(1L) );
-        matches.get(2).setVisitorTeamScore("2");
+        matches.get(2).setLocalTeam( teamRepository.getById(9259L) );
+        matches.get(2).setVisitorTeam( teamRepository.getById(9240L) );
         matches.get(2).setMatchHtScore("1:2");
+        matches.get(2).setMatchFtScore("2:2");
 
         matches.forEach(matchRepository::save);
 

@@ -1,5 +1,6 @@
 package followTheChampions.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
@@ -10,7 +11,7 @@ public class MatchEvent extends BasicEntity {
 
     @ManyToOne
     @JoinColumn(name = "match")
-    @NotEmpty
+    @JsonIgnore
     Match match;
 
     @Column(name = "type")
