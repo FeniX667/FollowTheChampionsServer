@@ -1,9 +1,7 @@
 package followTheChampions.controllers;
 
-import com.google.common.collect.Lists;
 import followTheChampions.dao.*;
 import followTheChampions.models.*;
-import followTheChampions.services.FirstApiCaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +12,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 
@@ -54,6 +49,7 @@ public class MobileApiController {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String index() {
+        logger.info("Default call");
 
         return "Greetings from Follow The Champions!";
     }
@@ -100,6 +96,12 @@ public class MobileApiController {
     public ResponseEntity<String>  removeFavouritedTeam(String deviceToken, String teamId) {
         logger.info("Removing favourited team");
 
+        RegisteredDevice device = registeredDeviceRepository.getByDeviceToken(deviceToken);
+        Team team =teamRepository.getById( Long.parseLong(teamId) );
+
+        List<FavouritedTeam> favouritedTeams = favouritedTeamRepository.getByDeviceTokenTeamId(device, team);
+
+        favouritedTeams.forEach(favouritedTeamRepository::delete);
 
         ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.OK);
         return response;
@@ -124,6 +126,8 @@ public class MobileApiController {
 
     @RequestMapping("/addFavouritedMatch")
     public ResponseEntity<String> addFavouritedMatch(String deviceToken, String matchId) {
+        logger.info("Adding favourited match");
+
         RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
         Match match = matchRepository.getById( new Long(matchId) );
 
@@ -139,12 +143,22 @@ public class MobileApiController {
 
     @RequestMapping("/removeFavouritedMatch")
     public ResponseEntity<String> removeFavouritedMatch(String deviceToken, String matchId) {
+        logger.info("Removing favourited match");
+
+        RegisteredDevice device = registeredDeviceRepository.getByDeviceToken(deviceToken);
+        Match match = matchRepository.getById( Long.parseLong(matchId) );
+
+        List<FavouritedMatch> favouritedMatches = favouritedMatchRepository.getByDeviceTokenTeamId(device, match);
+
+        favouritedMatches.forEach(favouritedMatchRepository::delete);
+
         ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.OK);
         return response;
     }
 
     @RequestMapping("/getFavouritedMatches")
     public @ResponseBody Iterable<FavouritedMatch> getFavouritedMatches(String deviceToken) {
+        logger.info("Getting favourited matches");
 
         RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
 
@@ -153,6 +167,19 @@ public class MobileApiController {
 
     @RequestMapping("/getStandings")
     public @ResponseBody Iterable<Standing> getStandings() {
+        logger.info("Getting standings");
         return standingRepository.findAll();
+    }
+
+    @RequestMapping("/getMatchesForTeam")
+    public @ResponseBody ResponseEntity<List<Match>> getMatchesForTeam(String teamId) {
+        logger.info("Getting matches for team");
+
+        Team team = teamRepository.getById( Long.parseLong(teamId) );
+
+        ResponseEntity<List<Match>> response;
+        response = ResponseEntity.ok().body( matchRepository.getByTeamId(team) );
+
+        return response;
     }
 }

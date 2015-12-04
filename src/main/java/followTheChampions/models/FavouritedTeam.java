@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
@@ -13,10 +14,12 @@ import javax.xml.bind.annotation.XmlTransient;
 public class FavouritedTeam extends AutomatedEntity {
 
     @ManyToOne
+    @NotNull
     @JoinColumn(name = "team")
     Team team;
 
     @ManyToOne
+    @NotNull
     @JoinColumn(name = "registeredDevice")
     @JsonIgnore
     RegisteredDevice registeredDevice;

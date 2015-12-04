@@ -2,10 +2,8 @@ package followTheChampions.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlTransient;
 
 @Entity
@@ -13,10 +11,12 @@ import javax.xml.bind.annotation.XmlTransient;
 public class FavouritedMatch extends AutomatedEntity {
 
     @ManyToOne
+    @NotNull
     @JoinColumn(name = "match")
     Match match;
 
     @ManyToOne
+    @NotNull
     @JoinColumn(name = "registeredDevice")
     @JsonIgnore
     RegisteredDevice registeredDevice;

@@ -1,6 +1,6 @@
 package followTheChampions.controllers;
 
-import followTheChampions.services.FirstApiCaller;
+import followTheChampions.services.FootballApiCaller;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,6 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
 
@@ -26,17 +25,18 @@ public class AdminApiController {
     public final static String SEASON_START_DATE = "08.08.2015";
 
     @Autowired
-    FirstApiCaller firstApiCaller;
+    FootballApiCaller firstApiCaller;
 
     private final static Logger logger = LoggerFactory
             .getLogger(AdminApiController.class);
 
     @RequestMapping(value = "/populateDbFromApi", method = RequestMethod.GET)
-    public ResponseEntity<String> populateDbFromApi() {
+    public ResponseEntity<String> populateDbFromApi() throws ParseException {
         ResponseEntity<String> response;
 
         firstApiCaller.callCompetition();
         firstApiCaller.callStandings();
+        this.callFixturesAllSeason();
 
         response = new ResponseEntity<>(HttpStatus.OK);
         return response;

@@ -5,7 +5,7 @@
 
     <groupId>planeta.solskiego</groupId>
     <artifactId>follow-the-champions</artifactId>
-    <version>0.2.2.MW</version>
+    <version>0.2.3.MW</version>
     <packaging>jar</packaging>
     <parent>
         <groupId>org.springframework.boot</groupId>

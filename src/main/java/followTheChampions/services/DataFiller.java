@@ -133,20 +133,20 @@ public class DataFiller {
         //////////////////////////////////////////////////////////////////////////
 
         favouritedTeams.add(0,new FavouritedTeam());
-        favouritedTeams.get(0).setRegisteredDevice( registeredDeviceRepository.getById(1L) );
-        favouritedTeams.get(0).setTeam( teamRepository.getById(1L));
+        favouritedTeams.get(0).setRegisteredDevice(registeredDeviceRepository.getById(1L));
+        favouritedTeams.get(0).setTeam( teamRepository.getById(9240L));
 
         favouritedTeams.add(1,new FavouritedTeam());
         favouritedTeams.get(1).setRegisteredDevice( registeredDeviceRepository.getById(1L) );
-        favouritedTeams.get(1).setTeam( teamRepository.getById(2L));
+        favouritedTeams.get(1).setTeam( teamRepository.getById(9260L));
 
         favouritedTeams.add(2,new FavouritedTeam());
         favouritedTeams.get(2).setRegisteredDevice( registeredDeviceRepository.getById(1L) );
-        favouritedTeams.get(2).setTeam( teamRepository.getById(3L));
+        favouritedTeams.get(2).setTeam( teamRepository.getById(9259L));
 
         favouritedTeams.add(3,new FavouritedTeam());
         favouritedTeams.get(3).setRegisteredDevice( registeredDeviceRepository.getById(2L) );
-        favouritedTeams.get(3).setTeam( teamRepository.getById(3L));
+        favouritedTeams.get(3).setTeam( teamRepository.getById(9259L));
 
         favouritedTeams.forEach(favouritedTeamRepository::save);
 
@@ -158,7 +158,7 @@ public class DataFiller {
 
         favouritedMatches.add(1,new FavouritedMatch());
         favouritedMatches.get(1).setRegisteredDevice( registeredDeviceRepository.getById(1L) );
-        favouritedMatches.get(1).setMatch( matchRepository.getById(1L) );
+        favouritedMatches.get(1).setMatch( matchRepository.getById(2L) );
 
         favouritedMatches.forEach(favouritedMatchRepository::save);
 
