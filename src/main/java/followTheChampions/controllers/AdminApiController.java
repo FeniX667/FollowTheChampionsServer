@@ -1,6 +1,9 @@
 package followTheChampions.controllers;
 
+import followTheChampions.dao.MatchEventRepository;
+import followTheChampions.models.MatchEvent;
 import followTheChampions.services.FootballApiCaller;
+import followTheChampions.services.NotificationService;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +29,12 @@ public class AdminApiController {
 
     @Autowired
     FootballApiCaller firstApiCaller;
+
+    @Autowired
+    NotificationService notificationService;
+
+    @Autowired
+    MatchEventRepository matchEventRepository;
 
     private final static Logger logger = LoggerFactory
             .getLogger(AdminApiController.class);
@@ -81,7 +90,7 @@ public class AdminApiController {
     public ResponseEntity<String> callFixturesLastTwoWeeks() {
 
         ResponseEntity<String> response;
-        DateTime fromDate = DateTime.now().minusDays(14);
+        DateTime fromDate = DateTime.now().minusMonths(10);//.minusDays(14);
         DateTime toDate = DateTime.now();
 
         firstApiCaller.callFixtures(fromDate, toDate);
@@ -90,6 +99,15 @@ public class AdminApiController {
         return response;
     }
 
+    @RequestMapping("/testAlert")
+    public ResponseEntity<String> testAlert()  {
+        ResponseEntity<String> response;
+
+        notificationService.fakeNotification();
+
+        response = new ResponseEntity<>(HttpStatus.OK);
+        return response;
+    }
 
     @RequestMapping("/dumpDb")
     public ResponseEntity<String> dumpDb() throws SQLException {

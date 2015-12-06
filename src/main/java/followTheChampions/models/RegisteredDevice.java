@@ -21,6 +21,11 @@ public class RegisteredDevice extends AutomatedEntity {
     @Column(name = "isActive")
     Boolean isActive;
 
+    @Column(name = "type")
+    Type type;
+
+    public enum Type { IOS, Android };
+
     public String getDeviceToken() {
         return deviceToken;
     }
@@ -43,5 +48,13 @@ public class RegisteredDevice extends AutomatedEntity {
 
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 }

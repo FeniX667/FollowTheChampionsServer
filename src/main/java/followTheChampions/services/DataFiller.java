@@ -59,12 +59,14 @@ public class DataFiller {
         registeredDevices.add(0,new RegisteredDevice());
         registeredDevices.get(0).setRegistrationDate(DateTime.now().toDate());
         registeredDevices.get(0).setIsActive(Boolean.TRUE);
+        registeredDevices.get(0).setType(RegisteredDevice.Type.Android);
         registeredDevices.get(0).setDeviceToken("demoToken");
 
         registeredDevices.add(1,new RegisteredDevice());
         registeredDevices.get(1).setRegistrationDate(DateTime.now().toDate());
         registeredDevices.get(1).setIsActive(Boolean.TRUE);
-        registeredDevices.get(1).setDeviceToken("demoToken1");
+        registeredDevices.get(1).setType(RegisteredDevice.Type.IOS);
+        registeredDevices.get(1).setDeviceToken("0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF");
 
         for(RegisteredDevice registeredDevice : registeredDevices){
             registeredDeviceRepository.save(registeredDevice);

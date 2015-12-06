@@ -2,6 +2,7 @@ package followTheChampions.controllers;
 
 import followTheChampions.dao.*;
 import followTheChampions.models.*;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,15 @@ public class MobileApiController {
     @RequestMapping("/registerDevice")
     public ResponseEntity<String> registerDevice(String deviceToken) {
         logger.info("Registering device " +deviceToken);
+
+        RegisteredDevice registeredDevice = new RegisteredDevice();
+        registeredDevice.setDeviceToken(deviceToken);
+        registeredDevice.setIsActive(Boolean.TRUE);
+        registeredDevice.setRegistrationDate(DateTime.now().toDate());
+        registeredDevice.setType( deviceToken.length() == 64 ? RegisteredDevice.Type.IOS : RegisteredDevice.Type.Android );
+
+        registeredDeviceRepository.save(registeredDevice);
+
         ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.OK);
         return response;
     }
