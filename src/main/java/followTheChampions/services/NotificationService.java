@@ -102,7 +102,7 @@ public class NotificationService {
         event.setPlayerName("Malar");
         event.setType("green card");
         event.setMinute("30");
-        event.setMatch( matchRepository.findAll().iterator().next() );
+        event.setMatch( matchRepository.getById(0L) );
 
         sendAsNotification(event);
     }

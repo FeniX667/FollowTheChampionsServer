@@ -162,6 +162,10 @@ public class DataFiller {
         favouritedMatches.get(1).setRegisteredDevice( registeredDeviceRepository.getById(1L) );
         favouritedMatches.get(1).setMatch( matchRepository.getById(2L) );
 
+        favouritedMatches.add(2,new FavouritedMatch());
+        favouritedMatches.get(2).setRegisteredDevice( registeredDeviceRepository.getById(2L) );
+        favouritedMatches.get(2).setMatch( matchRepository.getById(1L) );
+
         favouritedMatches.forEach(favouritedMatchRepository::save);
 
 

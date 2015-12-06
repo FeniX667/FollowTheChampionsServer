@@ -58,25 +58,39 @@ public class MobileApiController {
     @RequestMapping("/registerDevice")
     public ResponseEntity<String> registerDevice(String deviceToken) {
         logger.info("Registering device " +deviceToken);
+        ResponseEntity<String> response;
 
-        RegisteredDevice registeredDevice = new RegisteredDevice();
-        registeredDevice.setDeviceToken(deviceToken);
-        registeredDevice.setIsActive(Boolean.TRUE);
-        registeredDevice.setRegistrationDate(DateTime.now().toDate());
-        registeredDevice.setType( deviceToken.length() == 64 ? RegisteredDevice.Type.IOS : RegisteredDevice.Type.Android );
+        try {
+            RegisteredDevice registeredDevice = new RegisteredDevice();
+            registeredDevice.setDeviceToken(deviceToken);
+            registeredDevice.setIsActive(Boolean.TRUE);
+            registeredDevice.setRegistrationDate(DateTime.now().toDate());
+            registeredDevice.setType(deviceToken.length() == 64 ? RegisteredDevice.Type.IOS : RegisteredDevice.Type.Android);
 
-        registeredDeviceRepository.save(registeredDevice);
+            registeredDeviceRepository.save(registeredDevice);
+        }catch(Exception e){
+            logger.error("Registration failed for id {}", deviceToken);
+            response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return response;
+        }
 
-        ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.OK);
+        response = new ResponseEntity<>(HttpStatus.OK);
         return response;
     }
 
     @RequestMapping("/competitionData")
     public @ResponseBody ResponseEntity<Competition> competitionData() {
-
         logger.info("Retrieving competition data");
         ResponseEntity<Competition> response;
-        response = ResponseEntity.ok().body(competitionRepository.findAll().iterator().next());
+
+        try {
+            response = ResponseEntity.ok().body(competitionRepository.findAll().iterator().next());
+        }catch(Exception e){
+            logger.error("Retrieving failed");
+            response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return response;
+        }
+
         return response;
     }
 
@@ -89,16 +103,25 @@ public class MobileApiController {
     @RequestMapping("/addFavouritedTeam")
     public ResponseEntity<String> addFavouritedTeam(String deviceToken, String teamId) {
         logger.info("Adding favourited team");
+        ResponseEntity<String> response;
 
-        RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
-        Team team = teamRepository.getById( new Long(teamId) );
+        try {
+            RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
+            Team team = teamRepository.getById( new Long(teamId) );
 
-        FavouritedTeam favouritedTeam = new FavouritedTeam();
-        favouritedTeam.setRegisteredDevice(registeredDevice);
-        favouritedTeam.setTeam(team);
-        favouritedTeamRepository.save(favouritedTeam);
+            FavouritedTeam favouritedTeam = new FavouritedTeam();
+            favouritedTeam.setRegisteredDevice(registeredDevice);
+            favouritedTeam.setTeam(team);
+            favouritedTeamRepository.save(favouritedTeam);
 
-        ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.OK);
+            response = new ResponseEntity<>(HttpStatus.OK);
+
+        }catch(Exception e){
+            logger.error("failed with exception {}", e.getMessage());
+            response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return response;
+        }
+
         return response;
     }
 
@@ -129,25 +152,31 @@ public class MobileApiController {
     @RequestMapping("/searchForMatches")
     public @ResponseBody Iterable<Match> searchForMatches() {
         logger.info("Searching for matches");
-        Iterable<Match> matches = matchRepository.findAll();
-
-        return matches;
+        return matchRepository.findAll();
     }
 
     @RequestMapping("/addFavouritedMatch")
     public ResponseEntity<String> addFavouritedMatch(String deviceToken, String matchId) {
         logger.info("Adding favourited match");
+        ResponseEntity<String> response;
 
-        RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
-        Match match = matchRepository.getById( new Long(matchId) );
+        try {
+            RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
+            Match match = matchRepository.getById(new Long(matchId));
 
-        FavouritedMatch favouritedMatch = new FavouritedMatch();
-        favouritedMatch.setRegisteredDevice(registeredDevice);
-        favouritedMatch.setMatch(match);
-        favouritedMatchRepository.save(favouritedMatch);
+            FavouritedMatch favouritedMatch = new FavouritedMatch();
+            favouritedMatch.setRegisteredDevice(registeredDevice);
+            favouritedMatch.setMatch(match);
+            favouritedMatchRepository.save(favouritedMatch);
 
+            response = new ResponseEntity<>(HttpStatus.OK);
 
-        ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.OK);
+        }catch (Exception e){
+            logger.error("failed with exception {}", e.getMessage());
+            response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return response;
+        }
+
         return response;
     }
 
