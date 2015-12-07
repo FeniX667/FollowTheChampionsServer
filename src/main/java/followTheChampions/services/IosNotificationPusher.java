@@ -30,12 +30,13 @@ public class IosNotificationPusher {
     LoaderService loaderService;
 
     public void pushToDevices(List<String> deviceTokens, Alert alert) {
-        try {
-            pushMessage(deviceTokens, alert);
-            logger.info("Notification sent: " + alert.getMessage());
-        } catch (Exception ex) {
-            logger.error("Error sending message(s).", ex);
-        }
+        if( deviceTokens.size() > 0)
+            try {
+                pushMessage(deviceTokens, alert);
+                logger.info("Notification sent: " + alert.getMessage());
+            } catch (Exception ex) {
+                logger.error("Error sending message(s).", ex);
+            }
     }
 
     private void pushMessage(List<String> deviceTokens, Alert alert) throws Exception {

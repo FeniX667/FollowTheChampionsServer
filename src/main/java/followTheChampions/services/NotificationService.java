@@ -46,9 +46,15 @@ public class NotificationService {
 
     private List<RegisteredDevice> getDevicesWhichFavourThis(Match match) {
         LinkedList<RegisteredDevice> deviceList = new LinkedList<>();
-        for(RegisteredDevice device : registeredDeviceRepository.findAll()){
-            deviceList.add(device);
-        }
+        LinkedList<RegisteredDevice> interestedInTeams = new LinkedList<>();
+        LinkedList<RegisteredDevice> interestedInMatch = new LinkedList<>();
+
+        interestedInTeams.addAll(registeredDeviceRepository.getInterestedDevicesByTeams(match.getLocalTeam(), match.getVisitorTeam()));
+        interestedInMatch.addAll(registeredDeviceRepository.getInterestedDevicesByMatch(match));
+
+        deviceList.addAll(interestedInTeams);
+        deviceList.addAll(interestedInMatch);
+
         return deviceList;
     }
 
