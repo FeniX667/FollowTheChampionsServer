@@ -77,6 +77,13 @@ public class FootballApiCaller {
         }
         competitionList = (List<Map<String, Object>>) mappedResponse.get("Competition");
 
+        //Checking for ERROR
+        String error = (String) mappedResponse.get("ERROR");
+        if( !error.equals("OK") ){
+            logger.error("Calling competition failed with error {}", error);
+            return;
+        }
+
         //Comparing received data do db data
         Map<String, Object> mappedCompetition = competitionList.get(0);
 
@@ -124,6 +131,13 @@ public class FootballApiCaller {
         }
         logger.info( mappedResponse.toString() );
         StandingList = (List<Map<String, Object>>) mappedResponse.get("teams");
+
+        //Checking for ERROR
+        String error = (String) mappedResponse.get("ERROR");
+        if( !error.equals("OK") ){
+            logger.error("Calling competition failed with error {}", error);
+            return;
+        }
 
         //Comparing received data do db data (standings and teams)
         for(Map<String, Object> mappedStanding : StandingList){
@@ -187,12 +201,97 @@ public class FootballApiCaller {
 
     //http://football-api.com/api/?Action=today&APIKey=[YOUR_API_KEY]&comp_id=[COMPETITION]
     public void callTodayMatches(){
+        logger.info("Running against TodayMatchesURL");
 
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity responseEntity;
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Object> mappedResponse = new HashMap<>();
+        List<Map<String, Object>> matchList;
+
+        responseEntity = restTemplate.getForEntity(TODAY_MATCHES_URL, String.class);
+
+        //Retrieving jsonized matches from response
+        String jsonResponse = (String) responseEntity.getBody();
+        try {
+            mappedResponse = mapper.readValue(jsonResponse, new TypeReference<Map<String, Object>>() {
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        matchList = (List<Map<String, Object>>) mappedResponse.get("matches");
+
+        //Checking for ERROR
+        String error = (String) mappedResponse.get("ERROR");
+        if( !error.equals("OK") ){
+            logger.error("Calling today matches failed with error {}", error);
+            return;
+        }
+
+        //Comparing received data do db data (matches and matchEvents)
+        for (Map<String, Object> mappedMatch : matchList) {
+
+            Match existingMatch = matchRepository.getById(Long.valueOf(mappedMatch.get("match_id").toString()));
+            Team localTeam = teamRepository.getById(Long.parseLong(mappedMatch.get("match_localteam_id").toString()));
+            Team visitorTeam = teamRepository.getById(Long.parseLong(mappedMatch.get("match_visitorteam_id").toString()));
+
+            if (existingMatch != null) {
+                logger.info("Match updated");
+            } else {
+                existingMatch = new Match();
+                existingMatch.setMatchEventList(new LinkedList<>());
+                existingMatch.setId(Long.valueOf(mappedMatch.get("match_id").toString()));
+                logger.info("Saving as new match");
+            }
+
+            existingMatch.setMatchDate(mappedMatch.get("match_formatted_date").toString());
+            existingMatch.setStatus(mappedMatch.get("match_status").toString());
+            existingMatch.setTime(mappedMatch.get("match_time").toString());
+            existingMatch.setLocalTeam(localTeam);
+            existingMatch.setVisitorTeam(visitorTeam);
+            existingMatch.setMatchHtScore(mappedMatch.get("match_ht_score").toString());
+            existingMatch.setMatchFtScore(mappedMatch.get("match_ft_score").toString());
+
+            existingMatch = matchRepository.save(existingMatch);
+
+            List<Map<String, Object>> matchEventList = (List<Map<String, Object>>) mappedMatch.get("match_events");
+            if( matchEventList != null )
+                for (Map<String, Object> mappedEvent : matchEventList) {
+                    MatchEvent existingEvent = matchEventRepository.getById(Long.valueOf(mappedEvent.get("event_id").toString()));
+                    boolean isNew = true;
+
+                    if (existingEvent != null) {
+                        isNew = false;
+                        logger.info("Event updated");
+                    } else {
+                        existingEvent = new MatchEvent();
+                        existingEvent.setId(Long.valueOf(mappedEvent.get("event_id").toString()));
+
+                        logger.info("Saving as new event");
+                    }
+
+                    existingEvent.setMatch(existingMatch);
+                    existingEvent.setType(mappedEvent.get("event_type").toString());
+                    existingEvent.setMinute(mappedEvent.get("event_minute").toString());
+                    existingEvent.setWhichTeam(mappedEvent.get("event_team").toString());
+                    existingEvent.setPlayerName(mappedEvent.get("event_player").toString());
+                    existingEvent.setResult(mappedEvent.get("event_result").toString());
+
+                    existingEvent = matchEventRepository.save(existingEvent);
+                    existingMatch.getMatchEventList().add(existingEvent);
+                    existingMatch = matchRepository.save(existingMatch);
+
+                    if (isNew)
+                        notificationService.sendAsNotification(existingEvent);
+                }
+        }
+
+        logger.info("Running against fixturesURL finished.");
     }
 
     //http://football-api.com/api/?Action=fixtures&APIKey=[YOUR_API_KEY]&comp_id=[COMPETITION]&&match_date=[DATE_IN_d.m.Y_FORMAT]
-    public void callFixtures(DateTime fromDate, DateTime toDate){
-        logger.info( "Running against fixturesURL" );
+    public void callFixtures(DateTime fromDate, DateTime toDate) {
+        logger.info("Running against fixturesURL");
 
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity responseEntity;
@@ -202,8 +301,14 @@ public class FootballApiCaller {
 
         StringBuilder fixturesUrlBuilder = new StringBuilder();
         fixturesUrlBuilder.append(FIXTURES_URL).
-                append("&from_date=").append(fromDate.getDayOfMonth()).append(".").append(fromDate.getMonthOfYear()).append(".").append(fromDate.getYear()).
-                append("&to_date=").append(toDate.getDayOfMonth()).append(".").append(toDate.getMonthOfYear()).append(".").append(toDate.getYear());
+                append("&from_date=").
+                append( String.valueOf(fromDate.getDayOfMonth()).length() == 2 ? fromDate.getDayOfMonth() : "0"+fromDate.getDayOfMonth() ).append(".").
+                append(fromDate.getMonthOfYear()).append(".").
+                append(fromDate.getYear()).
+                append("&to_date=").
+                append( String.valueOf(toDate.getDayOfMonth()).length() == 2 ? toDate.getDayOfMonth() : "0"+toDate.getDayOfMonth() ).append(".").
+                append(toDate.getMonthOfYear()).append(".").
+                append(toDate.getYear());
 
         String fixturesUrl = fixturesUrlBuilder.toString();
 
@@ -212,74 +317,78 @@ public class FootballApiCaller {
         //Retrieving jsonized matches from response
         String jsonResponse = (String) responseEntity.getBody();
         try {
-            mappedResponse = mapper.readValue(jsonResponse, new TypeReference<Map<String, Object>>(){});
+            mappedResponse = mapper.readValue(jsonResponse, new TypeReference<Map<String, Object>>() {
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
         matchList = (List<Map<String, Object>>) mappedResponse.get("matches");
 
+        //Checking for ERROR
+        String error = (String) mappedResponse.get("ERROR");
+        if( !error.equals("OK") ){
+            logger.error("Calling competition failed with error {}", error);
+            return;
+        }
+
         //Comparing received data do db data (matches and matchEvents)
-        for(Map<String, Object> mappedMatch : matchList){
+        for (Map<String, Object> mappedMatch : matchList) {
 
-            Match existingMatch = matchRepository.getById( Long.valueOf( mappedMatch.get("match_id").toString()) );
-            Team localTeam = teamRepository.getById( Long.parseLong( mappedMatch.get("match_localteam_id").toString()) );
-            Team visitorTeam = teamRepository.getById( Long.parseLong( mappedMatch.get("match_visitorteam_id").toString()) );
+            Match existingMatch = matchRepository.getById(Long.valueOf(mappedMatch.get("match_id").toString()));
+            Team localTeam = teamRepository.getById(Long.parseLong(mappedMatch.get("match_localteam_id").toString()));
+            Team visitorTeam = teamRepository.getById(Long.parseLong(mappedMatch.get("match_visitorteam_id").toString()));
 
-            if( existingMatch != null ){
+            if (existingMatch != null) {
                 logger.info("Match updated");
-            }
-            else{
+            } else {
                 existingMatch = new Match();
-                existingMatch.setMatchEventList( new LinkedList<>() );
-                existingMatch.setId( Long.valueOf( mappedMatch.get("match_id").toString()) );
+                existingMatch.setMatchEventList(new LinkedList<>());
+                existingMatch.setId(Long.valueOf(mappedMatch.get("match_id").toString()));
                 logger.info("Saving as new match");
             }
 
-            existingMatch.setMatchDate( mappedMatch.get("match_formatted_date").toString() );
-            existingMatch.setStatus( mappedMatch.get("match_status").toString() );
-            existingMatch.setTime( mappedMatch.get("match_time").toString() );
-            existingMatch.setLocalTeam( localTeam );
-            existingMatch.setVisitorTeam( visitorTeam );
-            existingMatch.setMatchHtScore( mappedMatch.get("match_ht_score").toString() );
-            existingMatch.setMatchFtScore( mappedMatch.get("match_ft_score").toString() );
+            existingMatch.setMatchDate(mappedMatch.get("match_formatted_date").toString());
+            existingMatch.setStatus(mappedMatch.get("match_status").toString());
+            existingMatch.setTime(mappedMatch.get("match_time").toString());
+            existingMatch.setLocalTeam(localTeam);
+            existingMatch.setVisitorTeam(visitorTeam);
+            existingMatch.setMatchHtScore(mappedMatch.get("match_ht_score").toString());
+            existingMatch.setMatchFtScore(mappedMatch.get("match_ft_score").toString());
 
             existingMatch = matchRepository.save(existingMatch);
 
-            List<Map<String, Object>> matchEventList = (List<Map<String, Object>>) mappedMatch.get( "match_events" );
-            for(Map<String, Object> mappedEvent : matchEventList){
-                MatchEvent existingEvent = matchEventRepository.getById( Long.valueOf( mappedEvent.get("event_id").toString()) );
-                boolean isNew=true;
+            List<Map<String, Object>> matchEventList = (List<Map<String, Object>>) mappedMatch.get("match_events");
+            if( matchEventList != null )
+                for (Map<String, Object> mappedEvent : matchEventList) {
+                    MatchEvent existingEvent = matchEventRepository.getById(Long.valueOf(mappedEvent.get("event_id").toString()));
+                    boolean isNew = true;
 
-                if( existingEvent != null ){
-                    isNew=false;
-                    logger.info("Event updated");
+                    if (existingEvent != null) {
+                        isNew = false;
+                        logger.info("Event updated");
+                    } else {
+                        existingEvent = new MatchEvent();
+                        existingEvent.setId(Long.valueOf(mappedEvent.get("event_id").toString()));
+
+                        logger.info("Saving as new event");
+                    }
+
+                    existingEvent.setMatch(existingMatch);
+                    existingEvent.setType(mappedEvent.get("event_type").toString());
+                    existingEvent.setMinute(mappedEvent.get("event_minute").toString());
+                    existingEvent.setWhichTeam(mappedEvent.get("event_team").toString());
+                    existingEvent.setPlayerName(mappedEvent.get("event_player").toString());
+                    existingEvent.setResult(mappedEvent.get("event_result").toString());
+
+                    existingEvent = matchEventRepository.save(existingEvent);
+                    existingMatch.getMatchEventList().add(existingEvent);
+                    existingMatch = matchRepository.save(existingMatch);
+
+                    if (isNew)
+                        notificationService.sendAsNotification(existingEvent);
                 }
-                else{
-                    existingEvent = new MatchEvent();
-                    existingEvent.setId( Long.valueOf( mappedEvent.get("event_id").toString()) );
-
-                    logger.info("Saving as new event");
-                }
-
-                existingEvent.setMatch( existingMatch );
-                existingEvent.setType( mappedEvent.get("event_type").toString() );
-                existingEvent.setMinute( mappedEvent.get("event_minute").toString() );
-                existingEvent.setWhichTeam( mappedEvent.get("event_team").toString() );
-                existingEvent.setPlayerName( mappedEvent.get("event_player").toString() );
-                existingEvent.setResult( mappedEvent.get("event_result").toString() );
-
-                existingEvent = matchEventRepository.save( existingEvent );
-                existingMatch.getMatchEventList().add( existingEvent );
-                existingMatch = matchRepository.save( existingMatch );
-
-                if(isNew)
-                    notificationService.sendAsNotification(existingEvent);
-            }
         }
 
         logger.info("Running against fixturesURL finished.");
     }
-
-
-
 }

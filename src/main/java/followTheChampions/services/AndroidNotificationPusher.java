@@ -21,7 +21,7 @@ public class AndroidNotificationPusher {
             sender.sendNoRetry(message, deviceTokens);
 
         } catch (Exception e) {
-            logger.error("GCM caught exception {}", e);
+            logger.error("GCM caught exception: {}", e.getMessage());
         }
     }
 

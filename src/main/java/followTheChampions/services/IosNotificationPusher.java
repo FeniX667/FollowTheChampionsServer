@@ -63,7 +63,7 @@ public class IosNotificationPusher {
                     logger.debug("Sending to " + token);
                     apnsService.push(token, json);
                 } catch (Exception ex) {
-                    logger.warn("Exception while sending to " + token, ex);
+                    logger.warn("Exception while sending to " + token, ex.getMessage());
                 }
             }
         } else {

@@ -10,6 +10,7 @@ import followTheChampions.models.RegisteredDevice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
@@ -33,7 +34,7 @@ public class NotificationService {
     @Autowired
     MatchRepository matchRepository;
 
-    //@Async
+    @Async
     public void sendAsNotification(MatchEvent event){
         logger.info("Preparing notification");
 
@@ -64,7 +65,7 @@ public class NotificationService {
         Alert alert = new Alert();
 
         alert.setMessage("Testing message!");
-        alert.getPayload().put("match", event.getMatch());
+        alert.getPayload().put("match", event.getMatch().getId().toString());
         alert.getPayload().put("time", event.getMinute());
         alert.getPayload().put("whichTeam", event.getWhichTeam());
         alert.getPayload().put("type", event.getType());
@@ -78,12 +79,12 @@ public class NotificationService {
         Message.Builder messageBuilder =  new Message.Builder();
         messageBuilder
                 .addData("text", "Testing message!")
-                .addData("match", event.getType())
-                .addData("time", event.getType())
-                .addData("whichTeam", event.getType())
+                .addData("match", event.getMatch().getId().toString())
+                .addData("time", event.getMinute())
+                .addData("whichTeam", event.getWhichTeam())
                 .addData("type", event.getType())
-                .addData("player", event.getType())
-                .addData("result", event.getType())
+                .addData("player", event.getPlayerName())
+                .addData("result", event.getResult())
                 .delayWhileIdle(true)
                 .collapseKey(event.getType())
                 .timeToLive(30 * 60);
@@ -98,7 +99,7 @@ public class NotificationService {
         MatchEvent event = new MatchEvent();
         event.setId(99L);
         event.setWhichTeam("local");
-        event.setResult("1:0");
+        event.setResult("[1:0]");
         event.setPlayerName("Malar");
         event.setType("green card");
         event.setMinute("30");

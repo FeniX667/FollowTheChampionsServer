@@ -10,7 +10,7 @@ import com.google.gson.GsonBuilder;
 public class Alert {
 
     String message;
-    Map<String, Object> payload;
+    Map<String, String> payload;
 
     public Alert(){
         payload = new HashMap<>();
@@ -24,11 +24,11 @@ public class Alert {
         this.message = message;
     }
 
-    public Map<String, Object> getPayload() {
+    public Map<String, String> getPayload() {
         return payload;
     }
 
-    public void setPayload(Map<String, Object> payload) {
+    public void setPayload(Map<String, String> payload) {
         this.payload = payload;
     }
 

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -218,6 +219,25 @@ public class MobileApiController {
 
         ResponseEntity<List<Match>> response;
         response = ResponseEntity.ok().body( matchRepository.getByTeamId(team) );
+
+        return response;
+    }
+
+    @RequestMapping("/getAllFavouritedMatches")
+    public @ResponseBody ResponseEntity<List<Match>> getAllFavouritedMatches(String deviceToken) {
+        logger.info("Getting favourited matches and matches of favourited teams");
+        ResponseEntity<List<Match>> response;
+        List<Match> matches = new LinkedList<>();
+        try {
+            RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
+
+            matches = matchRepository.getAllFavouritedMatches( registeredDevice );
+        } catch (Exception e){
+            response = ResponseEntity.badRequest().body(matches);
+            return response;
+        }
+
+        response = ResponseEntity.ok().body( matches );
 
         return response;
     }

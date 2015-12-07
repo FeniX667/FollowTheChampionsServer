@@ -71,6 +71,16 @@ public class AdminApiController {
         return response;
     }
 
+    @RequestMapping("/callTodayMatches")
+    public ResponseEntity<String> callTodayMatches() {
+        ResponseEntity<String> response;
+
+        firstApiCaller.callTodayMatches();
+
+        response = new ResponseEntity<>(HttpStatus.OK);
+        return response;
+    }
+
     @RequestMapping("/callFixturesAllSeason")
     public ResponseEntity<String> callFixturesAllSeason() throws ParseException {
         ResponseEntity<String> response;
@@ -90,7 +100,7 @@ public class AdminApiController {
     public ResponseEntity<String> callFixturesLastTwoWeeks() {
 
         ResponseEntity<String> response;
-        DateTime fromDate = DateTime.now().minusMonths(10);//.minusDays(14);
+        DateTime fromDate = DateTime.now().minusDays(14);
         DateTime toDate = DateTime.now();
 
         firstApiCaller.callFixtures(fromDate, toDate);
