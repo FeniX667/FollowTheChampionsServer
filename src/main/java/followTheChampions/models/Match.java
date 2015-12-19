@@ -28,7 +28,7 @@ public class Match extends BasicEntity {
     @JoinColumn(name = "visitorTeam")
     Team visitorTeam;
 
-    @OneToMany(mappedBy = "match")
+    @OneToMany(mappedBy = "match", cascade = CascadeType.REMOVE)
     List<MatchEvent> matchEventList;
 
     @Column(name = "matchHtScore")

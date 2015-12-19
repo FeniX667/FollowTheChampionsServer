@@ -1,11 +1,9 @@
 package followTheChampions.controllers;
 
 import followTheChampions.dao.MatchEventRepository;
+import followTheChampions.dao.MatchRepository;
 import followTheChampions.dao.RegisteredDeviceRepository;
-import followTheChampions.models.Competition;
-import followTheChampions.models.MatchEvent;
-import followTheChampions.models.RegisteredDevice;
-import followTheChampions.models.Team;
+import followTheChampions.models.*;
 import followTheChampions.services.FootballApiCaller;
 import followTheChampions.services.NotificationService;
 import org.joda.time.DateTime;
@@ -31,6 +29,7 @@ import java.util.Locale;
 public class AdminApiController {
 
     public final static String SEASON_START_DATE = "08.08.2015";
+    public final static String ALERT_TEST_DATE = "11.01.2015";
 
     @Autowired
     FootballApiCaller firstApiCaller;
@@ -40,6 +39,9 @@ public class AdminApiController {
 
     @Autowired
     RegisteredDeviceRepository registeredDeviceRepository;
+
+    @Autowired
+    MatchRepository matchRepository;
 
     private final static Logger logger = LoggerFactory
             .getLogger(AdminApiController.class);
@@ -70,6 +72,17 @@ public class AdminApiController {
     public ResponseEntity<String> callStandings() {
         ResponseEntity<String> response;
 
+        firstApiCaller.callStandings();
+
+        response = new ResponseEntity<>(HttpStatus.OK);
+        return response;
+    }
+
+    @RequestMapping("/callStandingsAndCompetition")
+    public ResponseEntity<String> callStandingsAndCompetition() {
+        ResponseEntity<String> response;
+
+        firstApiCaller.callCompetition();
         firstApiCaller.callStandings();
 
         response = new ResponseEntity<>(HttpStatus.OK);
@@ -114,11 +127,32 @@ public class AdminApiController {
         return response;
     }
 
-    @RequestMapping("/testAlert")
-    public ResponseEntity<String> testAlert()  {
+    @RequestMapping("/testSingleAlert")
+    public ResponseEntity<String> testSingleAlert()  {
+        logger.info("Testing single alert");
         ResponseEntity<String> response;
 
         notificationService.fakeNotification();
+
+        response = new ResponseEntity<>(HttpStatus.OK);
+        return response;
+    }
+
+    @RequestMapping("/testMatchAlert")
+    public ResponseEntity<String> testMatchAlert() throws ParseException {
+        logger.info("Testing match alert");
+        ResponseEntity<String> response;
+
+        DateFormat format = new SimpleDateFormat("dd.mm.yyyy", Locale.ENGLISH);
+
+        DateTime fromDate = new DateTime(format.parse(ALERT_TEST_DATE));
+        DateTime toDate = new DateTime(format.parse(ALERT_TEST_DATE));
+
+        firstApiCaller.callFixtures(fromDate, toDate);
+
+        logger.info("Deleting pulled match");
+        matchRepository.delete(1967777L);
+        matchRepository.delete(1967984L);
 
         response = new ResponseEntity<>(HttpStatus.OK);
         return response;
@@ -130,7 +164,6 @@ public class AdminApiController {
         logger.info("Searching for devices");
         return registeredDeviceRepository.findAll();
     }
-
 
     @RequestMapping("/dumpDb")
     public ResponseEntity<String> dumpDb() throws SQLException {

@@ -18,8 +18,8 @@ import java.util.*;
 @Service
 public class FootballApiCaller {
 
-    public final static String API_KEY="64bc654e-5926-9cfe-384b14a72f1a"; // Solskiego
-    //public final static String API_KEY="8b38ab51-3460-9ea3-73f697a040e3";   // Magda
+    //public final static String API_KEY="64bc654e-5926-9cfe-384b14a72f1a"; // Solskiego
+    public final static String API_KEY="8b38ab51-3460-9ea3-73f697a040e3";   // Magda
     public final static String COMP_ID="1204";
 
     public final static String COMPETITION_URL = "http://football-api.com/api/?Action=competitions&APIKey=" +API_KEY;
