@@ -1,6 +1,8 @@
 package followTheChampions.controllers;
 
 import followTheChampions.dao.*;
+import followTheChampions.dto.MatchPersonalizedDTO;
+import followTheChampions.dto.TeamPersonalizedDTO;
 import followTheChampions.models.*;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RequestMapping("/mobile")
@@ -61,18 +64,24 @@ public class MobileApiController {
         logger.info("Registering device " +deviceToken);
         ResponseEntity<String> response;
 
-        try {
-            RegisteredDevice registeredDevice = new RegisteredDevice();
-            registeredDevice.setDeviceToken(deviceToken);
-            registeredDevice.setIsActive(Boolean.TRUE);
-            registeredDevice.setRegistrationDate(DateTime.now().toDate());
-            registeredDevice.setType(deviceToken.length() == 64 ? RegisteredDevice.Type.IOS : RegisteredDevice.Type.Android);
 
-            registeredDeviceRepository.save(registeredDevice);
-        }catch(Exception e){
-            logger.error("Registration failed for id {}", deviceToken);
-            response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            return response;
+        RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
+        if( registeredDevice!=null )
+            logger.error("Device with token {} already registered", deviceToken);
+        else{
+            try {
+                registeredDevice = new RegisteredDevice();
+                registeredDevice.setDeviceToken(deviceToken);
+                registeredDevice.setIsActive(Boolean.TRUE);
+                registeredDevice.setRegistrationDate(DateTime.now().toDate());
+                registeredDevice.setType(deviceToken.length() == 64 ? RegisteredDevice.Type.IOS : RegisteredDevice.Type.Android);
+
+                registeredDeviceRepository.save(registeredDevice);
+            }catch(Exception e){
+                logger.error("Registration failed for id {}", deviceToken);
+                response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                return response;
+            }
         }
 
         response = new ResponseEntity<>(HttpStatus.OK);
@@ -99,6 +108,30 @@ public class MobileApiController {
     public @ResponseBody Iterable<Team> searchForTeams() {
         logger.info("Searching for teams");
         return teamRepository.findAll();
+    }
+
+    @RequestMapping("/searchForTeamsPersonalized")
+    public @ResponseBody List<TeamPersonalizedDTO> searchForTeamsPersonalized(String deviceToken) {
+        logger.info("Searching for teams");
+        List<TeamPersonalizedDTO> teamPersonalizedDTOs = new LinkedList<>();
+        RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
+
+        Iterable<Team> teams = teamRepository.findAll();
+        List<FavouritedTeam> favTeams = favouritedTeamRepository.getByRegisteredDevice(registeredDevice);
+        List<Team> teamsExtracted = new LinkedList<>();
+
+        for(FavouritedTeam favouritedTeam : favTeams){
+            teamsExtracted.add(favouritedTeam.getTeam());
+        }
+
+        for(Team team : teams){
+            if( teamsExtracted.contains(team) )
+                teamPersonalizedDTOs.add( new TeamPersonalizedDTO(team, Boolean.TRUE));
+            else
+                teamPersonalizedDTOs.add( new TeamPersonalizedDTO(team, Boolean.FALSE));
+        }
+
+        return teamPersonalizedDTOs;
     }
 
     @RequestMapping("/addFavouritedTeam")
@@ -155,6 +188,27 @@ public class MobileApiController {
         logger.info("Searching for matches");
         return matchRepository.findAll();
     }
+
+    @RequestMapping("/searchForMatchesPersonalized")
+    public @ResponseBody List<MatchPersonalizedDTO> searchForMatchesPersonalized(String deviceToken) {
+        logger.info("Searching for teams");
+        List<MatchPersonalizedDTO> matchPersonalizedDTOs = new LinkedList<>();
+        RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
+
+        Iterable<Match> matches = matchRepository.findAll();
+        List<FavouritedMatch> favMatches = favouritedMatchRepository.getByRegisteredDevice(registeredDevice);
+        List<Match> matchesExtracted = favMatches.stream().map(FavouritedMatch::getMatch).collect(Collectors.toCollection(() -> new LinkedList<>()));
+
+        for(Match match : matches){
+            if( matchesExtracted.contains(match) )
+                matchPersonalizedDTOs.add( new MatchPersonalizedDTO(match, Boolean.TRUE));
+            else
+                matchPersonalizedDTOs.add( new MatchPersonalizedDTO(match, Boolean.FALSE));
+        }
+
+        return matchPersonalizedDTOs;
+    }
+
 
     @RequestMapping("/addFavouritedMatch")
     public ResponseEntity<String> addFavouritedMatch(String deviceToken, String matchId) {

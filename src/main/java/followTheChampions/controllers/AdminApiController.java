@@ -1,7 +1,11 @@
 package followTheChampions.controllers;
 
 import followTheChampions.dao.MatchEventRepository;
+import followTheChampions.dao.RegisteredDeviceRepository;
+import followTheChampions.models.Competition;
 import followTheChampions.models.MatchEvent;
+import followTheChampions.models.RegisteredDevice;
+import followTheChampions.models.Team;
 import followTheChampions.services.FootballApiCaller;
 import followTheChampions.services.NotificationService;
 import org.joda.time.DateTime;
@@ -12,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.SQLException;
@@ -34,7 +39,7 @@ public class AdminApiController {
     NotificationService notificationService;
 
     @Autowired
-    MatchEventRepository matchEventRepository;
+    RegisteredDeviceRepository registeredDeviceRepository;
 
     private final static Logger logger = LoggerFactory
             .getLogger(AdminApiController.class);
@@ -118,6 +123,14 @@ public class AdminApiController {
         response = new ResponseEntity<>(HttpStatus.OK);
         return response;
     }
+
+    @RequestMapping("/getRegisteredDevices")
+    public @ResponseBody
+    Iterable<RegisteredDevice> getRegisteredDevices() {
+        logger.info("Searching for devices");
+        return registeredDeviceRepository.findAll();
+    }
+
 
     @RequestMapping("/dumpDb")
     public ResponseEntity<String> dumpDb() throws SQLException {
