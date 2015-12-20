@@ -12,14 +12,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.*;
 
 @Service
 public class FootballApiCaller {
 
-    //public final static String API_KEY="64bc654e-5926-9cfe-384b14a72f1a"; // Solskiego
-    public final static String API_KEY="8b38ab51-3460-9ea3-73f697a040e3";   // Magda
+    public final static String API_KEY="64bc654e-5926-9cfe-384b14a72f1a"; // Solskiego
+    //public final static String API_KEY="8b38ab51-3460-9ea3-73f697a040e3";   // Magda
     public final static String COMP_ID="1204";
 
     public final static String COMPETITION_URL = "http://football-api.com/api/?Action=competitions&APIKey=" +API_KEY;
@@ -111,6 +112,7 @@ public class FootballApiCaller {
     }
 
     //http://football-api.com/api/?Action=standings&APIKey=[YOUR_API_KEY]&comp_id=[COMPETITION]
+    @PostConstruct
     public void callStandings() {
         logger.info( "Running against standingsURL" );
 
@@ -230,13 +232,18 @@ public class FootballApiCaller {
 
         //Comparing received data do db data (matches and matchEvents)
         for (Map<String, Object> mappedMatch : matchList) {
-
+            boolean isStatusUpdated = false;
             Match existingMatch = matchRepository.getById(Long.valueOf(mappedMatch.get("match_id").toString()));
             Team localTeam = teamRepository.getById(Long.parseLong(mappedMatch.get("match_localteam_id").toString()));
             Team visitorTeam = teamRepository.getById(Long.parseLong(mappedMatch.get("match_visitorteam_id").toString()));
 
             if (existingMatch != null) {
-                logger.info("Match updated");
+                if( !existingMatch.getStatus().equals( mappedMatch.get("match_status").toString() ) ){
+                    logger.info("Stary {}, nowy {}", existingMatch.getStatus(), mappedMatch.get("match_status").toString());
+                    isStatusUpdated = true;
+                    logger.info("Status match updated");
+                }
+
             } else {
                 existingMatch = new Match();
                 existingMatch.setMatchEventList(new LinkedList<>());
@@ -253,6 +260,9 @@ public class FootballApiCaller {
             existingMatch.setMatchFtScore(mappedMatch.get("match_ft_score").toString());
 
             existingMatch = matchRepository.save(existingMatch);
+
+            if( isStatusUpdated )
+                notificationService.sendAsNotification(existingMatch);
 
             List<Map<String, Object>> matchEventList = (List<Map<String, Object>>) mappedMatch.get("match_events");
             if( matchEventList != null )

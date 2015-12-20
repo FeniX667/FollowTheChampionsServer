@@ -6,7 +6,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 @Service
-public class LoaderService implements ResourceLoaderAware {
+public class FileLoaderService implements ResourceLoaderAware {
 
     private ResourceLoader resourceLoader;
 

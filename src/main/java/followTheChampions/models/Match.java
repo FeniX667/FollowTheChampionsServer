@@ -28,7 +28,7 @@ public class Match extends BasicEntity {
     @JoinColumn(name = "visitorTeam")
     Team visitorTeam;
 
-    @OneToMany(mappedBy = "match", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "match", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     List<MatchEvent> matchEventList;
 
     @Column(name = "matchHtScore")
@@ -99,5 +99,11 @@ public class Match extends BasicEntity {
 
     public void setMatchEventList(List<MatchEvent> matchEventList) {
         this.matchEventList = matchEventList;
+    }
+
+    public String getMatchName(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(localTeam.getName()).append(" vs ").append(visitorTeam.getName());
+        return sb.toString();
     }
 }

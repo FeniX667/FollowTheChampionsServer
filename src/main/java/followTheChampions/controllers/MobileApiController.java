@@ -2,6 +2,7 @@ package followTheChampions.controllers;
 
 import followTheChampions.dao.*;
 import followTheChampions.dto.MatchPersonalizedDTO;
+import followTheChampions.dto.StandingsPersonalizedDTO;
 import followTheChampions.dto.TeamPersonalizedDTO;
 import followTheChampions.models.*;
 import org.joda.time.DateTime;
@@ -112,7 +113,7 @@ public class MobileApiController {
 
     @RequestMapping("/searchForTeamsPersonalized")
     public @ResponseBody List<TeamPersonalizedDTO> searchForTeamsPersonalized(String deviceToken) {
-        logger.info("Searching for teams");
+        logger.info("Searching for personalized teams");
         List<TeamPersonalizedDTO> teamPersonalizedDTOs = new LinkedList<>();
         RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
 
@@ -191,7 +192,7 @@ public class MobileApiController {
 
     @RequestMapping("/searchForMatchesPersonalized")
     public @ResponseBody List<MatchPersonalizedDTO> searchForMatchesPersonalized(String deviceToken) {
-        logger.info("Searching for teams");
+        logger.info("Searching for personalized matches");
         List<MatchPersonalizedDTO> matchPersonalizedDTOs = new LinkedList<>();
         RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
 
@@ -263,6 +264,35 @@ public class MobileApiController {
     public @ResponseBody Iterable<Standing> getStandings() {
         logger.info("Getting standings");
         return standingRepository.findAll();
+    }
+
+    @RequestMapping("/getStandingsPersonalized")
+    public @ResponseBody ResponseEntity<List<StandingsPersonalizedDTO>> getStandingsPersonalized(String deviceToken) {
+        logger.info("Searching for personalized standings");
+        ResponseEntity<List<StandingsPersonalizedDTO>> response;
+        List<StandingsPersonalizedDTO> standingsPersonalizedDTOs = new LinkedList<>();
+
+        try {
+            RegisteredDevice registeredDevice = registeredDeviceRepository.getByDeviceToken(deviceToken);
+
+            Iterable<Standing> standings = standingRepository.findAll();
+            List<FavouritedTeam> favTeams = favouritedTeamRepository.getByRegisteredDevice(registeredDevice);
+            List<Long> teamsExtracted = favTeams.stream().map(favTeam -> favTeam.getTeam().getId()).collect(Collectors.toCollection(() -> new LinkedList<>()));
+
+            for (Standing standing : standings) {
+                if (teamsExtracted.contains(standing.getStandTeamId()))
+                    standingsPersonalizedDTOs.add(new StandingsPersonalizedDTO(standing, Boolean.TRUE));
+                else
+                    standingsPersonalizedDTOs.add(new StandingsPersonalizedDTO(standing, Boolean.FALSE));
+            }
+        }catch(Exception e){
+            logger.error("failed with exception {}", e.getMessage());
+            response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return response;
+        }
+
+        response = ResponseEntity.ok().body( standingsPersonalizedDTOs );
+        return response;
     }
 
     @RequestMapping("/getMatchesForTeam")

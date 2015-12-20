@@ -3,7 +3,7 @@ package followTheChampions.services;
 import com.google.android.gcm.server.Message;
 import followTheChampions.dao.MatchRepository;
 import followTheChampions.dao.RegisteredDeviceRepository;
-import followTheChampions.dto.Alert;
+import followTheChampions.dto.Notification;
 import followTheChampions.models.Match;
 import followTheChampions.models.MatchEvent;
 import followTheChampions.models.RegisteredDevice;
@@ -13,8 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class NotificationService {
@@ -44,6 +46,16 @@ public class NotificationService {
         androidNotificationPusher.pushToDevices( getTokensFromDevices(deviceList, RegisteredDevice.Type.Android), createAndroidMessage(event) );
     }
 
+    @Async
+    public void sendAsNotification(Match match){
+        logger.info("Preparing notification");
+
+        List<RegisteredDevice> deviceList = getDevicesWhichFavourThis( match );
+
+        iosNotificationPusher.pushToDevices( getTokensFromDevices(deviceList, RegisteredDevice.Type.IOS), createIosAlert(match) );
+        androidNotificationPusher.pushToDevices( getTokensFromDevices(deviceList, RegisteredDevice.Type.Android), createAndroidMessage(match) );
+    }
+
     private List<RegisteredDevice> getDevicesWhichFavourThis(Match match) {
         LinkedList<RegisteredDevice> deviceList = new LinkedList<>();
         LinkedList<RegisteredDevice> interestedInTeams = new LinkedList<>();
@@ -67,20 +79,49 @@ public class NotificationService {
         return tokenList;
     }
 
-    private Alert createIosAlert(MatchEvent event){
-        Alert alert = new Alert();
+    private Notification createIosAlert(MatchEvent event){
+        Notification notification = new Notification();
 
-        alert.setMessage("Testing message!");
-        alert.getPayload().put("match", event.getMatch().getId().toString());
-        alert.getPayload().put("time", event.getMinute());
-        alert.getPayload().put("whichTeam", event.getWhichTeam());
-        alert.getPayload().put("type", event.getType());
-        alert.getPayload().put("player", event.getPlayerName());
-        alert.getPayload().put("result", event.getResult());
+        Map<String, String> aps = new HashMap<>();
+        aps.put("category", "NEW_MESSAGE_CATEGORY");
+        aps.put("alert", event.getMatch().getMatchName() + event.getType() );
 
-        return alert;
+        notification.getPayload().put("match", event.getMatch().getId().toString());
+        notification.getPayload().put("time", event.getMinute());
+        notification.getPayload().put("whichTeam", event.getWhichTeam());
+        notification.getPayload().put("type", event.getType());
+        notification.getPayload().put("player", event.getPlayerName());
+        notification.getPayload().put("result", event.getResult());
+
+        return notification;
     }
 
+    private Notification createIosAlert(Match match){
+        Notification notification = new Notification();
+
+        Map<String, String> aps = new HashMap<>();
+        aps.put("category", "NEW_MESSAGE_CATEGORY");
+        aps.put("alert", match.getMatchName() );
+
+        String status = match.getStatus();
+        switch(match.getStatus()){
+            case "started" :
+                aps.put("alert", match.getMatchName() + " started! " );
+                break;
+
+            case "hf" :
+                aps.put("alert", match.getMatchName() + " half time. " );
+                break;
+
+            case "ft" :
+                aps.put("alert", match.getMatchName() + " is finished. " );
+                break;
+        }
+
+        notification.getPayload().put("match", match);
+
+        return notification;
+    }
     private Message createAndroidMessage(MatchEvent event) {
         Message.Builder messageBuilder =  new Message.Builder();
         messageBuilder
@@ -93,6 +134,36 @@ public class NotificationService {
                 .addData("result", event.getResult())
                 .delayWhileIdle(true)
                 .collapseKey(event.getType())
+                .timeToLive(30 * 60);
+
+        return messageBuilder.build();
+    }
+
+    private Message createAndroidMessage(Match match) {
+        Message.Builder messageBuilder =  new Message.Builder();
+        String message = new String();
+
+        String status = match.getStatus();
+        switch(match.getStatus()){
+            case "1" :
+                message = match.getMatchName() + " started! ";
+                break;
+
+            case "46" :
+                message = match.getMatchName() + " second half started. " ;
+                break;
+
+            case "ft" :
+                message = match.getMatchName() + " is finished. " ;
+                break;
+        }
+
+        messageBuilder
+                .addData("text", message)
+                .addData("match", match.getId().toString())
+                .addData("status", status)
+                .delayWhileIdle(true)
+                .collapseKey(status)
                 .timeToLive(30 * 60);
 
         return messageBuilder.build();

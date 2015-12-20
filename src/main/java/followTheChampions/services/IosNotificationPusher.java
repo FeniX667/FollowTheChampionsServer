@@ -2,8 +2,7 @@ package followTheChampions.services;
 
 import com.notnoop.apns.*;
 import com.notnoop.apns.internal.ReconnectPolicies;
-import followTheChampions.dto.Alert;
-import followTheChampions.models.RegisteredDevice;
+import followTheChampions.dto.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,29 +25,29 @@ public class IosNotificationPusher {
     private ApnsService apnsService;
 
     @Autowired
-    LoaderService loaderService;
+    FileLoaderService fileLoaderService;
 
-    public void pushToDevices(List<String> deviceTokens, Alert alert) {
+    public void pushToDevices(List<String> deviceTokens, Notification notification) {
         if( deviceTokens.size() > 0)
             try {
-                pushMessage(deviceTokens, alert);
-                logger.info("Notification sent: " + alert.getMessage());
+                pushMessage(deviceTokens, notification);
+                logger.info("Notification sent: " + notification.getPayload());
             } catch (Exception ex) {
                 logger.error("Error sending message(s).", ex);
             }
     }
 
-    private void pushMessage(List<String> deviceTokens, Alert alert) throws Exception {
+    private void pushMessage(List<String> deviceTokens, Notification notification) throws Exception {
         for (String token : deviceTokens) {
             logger.debug("sending to " + token);
         }
         logger.info("Pushing to " + deviceTokens.size() + " devices.");
 
         String json = null;
-        if ( deviceTokens.size() > 0 && !StringUtils.isEmpty( alert.getMessage()) ) {
+        if ( deviceTokens.size() > 0 && !StringUtils.isEmpty( notification.getPayload()) ) {
             checkConnection();
 
-            json = alert.toJson();
+            json = notification.toJson();
             logger.debug("json:\n" + json);
             int length = json.length();
 
@@ -95,7 +93,7 @@ public class IosNotificationPusher {
     private ApnsService setupConnection() throws Exception {
         logger.info("Loading cert {}", certLocation);
 
-        InputStream stream = loaderService.getResource(certLocation).getInputStream();
+        InputStream stream = fileLoaderService.getResource(certLocation).getInputStream();
 
         if (stream == null) {
             throw new Exception("No cert found at " + certLocation);
