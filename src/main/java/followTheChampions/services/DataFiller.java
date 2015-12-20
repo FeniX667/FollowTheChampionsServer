@@ -67,6 +67,7 @@ public class DataFiller {
         registeredDevices.get(1).setIsActive(Boolean.TRUE);
         registeredDevices.get(1).setType(RegisteredDevice.Type.IOS);
         registeredDevices.get(1).setDeviceToken("0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF");
+        //registeredDevices.get(1).setDeviceToken("612387a1a4ea126ffcddabbdf8576ecefeff01a442fc7a85cd625a1219e7daa7");s
 
         for(RegisteredDevice registeredDevice : registeredDevices){
             registeredDeviceRepository.save(registeredDevice);

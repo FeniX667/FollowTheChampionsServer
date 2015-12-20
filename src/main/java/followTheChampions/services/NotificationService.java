@@ -36,7 +36,7 @@ public class NotificationService {
     @Autowired
     MatchRepository matchRepository;
 
-    @Async
+    //@Async
     public void sendAsNotification(MatchEvent event){
         logger.info("Preparing notification");
 
@@ -46,12 +46,11 @@ public class NotificationService {
         androidNotificationPusher.pushToDevices( getTokensFromDevices(deviceList, RegisteredDevice.Type.Android), createAndroidMessage(event) );
     }
 
-    @Async
+    //@Async
     public void sendAsNotification(Match match){
         logger.info("Preparing notification");
 
         List<RegisteredDevice> deviceList = getDevicesWhichFavourThis( match );
-        logger.info("Sending to {} devices", deviceList.size());
 
         iosNotificationPusher.pushToDevices( getTokensFromDevices(deviceList, RegisteredDevice.Type.IOS), createIosAlert(match) );
         androidNotificationPusher.pushToDevices( getTokensFromDevices(deviceList, RegisteredDevice.Type.Android), createAndroidMessage(match) );
@@ -66,7 +65,7 @@ public class NotificationService {
         interestedInMatch.addAll(registeredDeviceRepository.getInterestedDevicesByMatch(match));
 
         deviceList.addAll(interestedInTeams);
-        deviceList.addAll(interestedInMatch);
+        interestedInMatch.stream().filter(device -> !deviceList.contains(device)).forEach(deviceList::add);
 
         return deviceList;
     }
@@ -199,6 +198,9 @@ public class NotificationService {
         logger.info("Preparing status notification");
         Match match = matchRepository.getById(1L);
         match.setStatus("1");
+        sendAsNotification(match);
+
+        match.setStatus("HT");
         sendAsNotification(match);
 
         match.setStatus("46");

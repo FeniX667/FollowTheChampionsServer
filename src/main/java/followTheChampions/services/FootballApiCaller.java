@@ -19,14 +19,14 @@ import java.util.*;
 @Service
 public class FootballApiCaller {
 
-    public final static String API_KEY="64bc654e-5926-9cfe-384b14a72f1a"; // Solskiego
-    //public final static String API_KEY="8b38ab51-3460-9ea3-73f697a040e3";   // Magda
+    public final static String API_KEY_S="64bc654e-5926-9cfe-384b14a72f1a"; // Solskiego
+    public final static String API_KEY_MW="8b38ab51-3460-9ea3-73f697a040e3";   // Magda
     public final static String COMP_ID="1204";
 
-    public final static String COMPETITION_URL = "http://football-api.com/api/?Action=competitions&APIKey=" +API_KEY;
-    public final static String STANDINGS_URL = "http://football-api.com/api/?Action=standings&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID;
-    public final static String TODAY_MATCHES_URL = "http://football-api.com/api/?Action=today&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID;
-    public final static String FIXTURES_URL = "http://football-api.com/api/?Action=fixtures&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID; //&from_date=d.m.y&to_date=d.m.y
+    public static String COMPETITION_URL;
+    public static String STANDINGS_URL;
+    public static String TODAY_MATCHES_URL;
+    public static String FIXTURES_URL;
 
     private final static Logger logger = LoggerFactory
             .getLogger(FootballApiCaller.class);
@@ -58,6 +58,24 @@ public class FootballApiCaller {
     @Autowired
     NotificationService notificationService;
 
+    @PostConstruct
+    public void initDb(){
+        String API_KEY = API_KEY_S;
+
+        String COMPETITION_URL = "http://football-api.com/api/?Action=competitions&APIKey=" +API_KEY;
+        String STANDINGS_URL = "http://football-api.com/api/?Action=standings&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID;
+        String TODAY_MATCHES_URL = "http://football-api.com/api/?Action=today&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID;
+        String FIXTURES_URL = "http://football-api.com/api/?Action=fixtures&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID; //&from_date=d.m.y&to_date=d.m.y
+
+        this.COMPETITION_URL = COMPETITION_URL;
+        this.STANDINGS_URL = STANDINGS_URL;
+        this.TODAY_MATCHES_URL = TODAY_MATCHES_URL;
+        this.FIXTURES_URL = FIXTURES_URL;
+
+        this.callCompetition();
+        this.callStandings();
+    }
+
     public void callCompetition() {
         logger.info( "Running against competitionURL" );
 
@@ -80,10 +98,8 @@ public class FootballApiCaller {
 
         //Checking for ERROR
         String error = (String) mappedResponse.get("ERROR");
-        if( !error.equals("OK") ){
-            logger.error("Calling competition failed with error {}", error);
+        if( errorCheck(error) )
             return;
-        }
 
         //Comparing received data do db data
         Map<String, Object> mappedCompetition = competitionList.get(0);
@@ -112,7 +128,6 @@ public class FootballApiCaller {
     }
 
     //http://football-api.com/api/?Action=standings&APIKey=[YOUR_API_KEY]&comp_id=[COMPETITION]
-    @PostConstruct
     public void callStandings() {
         logger.info( "Running against standingsURL" );
 
@@ -136,10 +151,8 @@ public class FootballApiCaller {
 
         //Checking for ERROR
         String error = (String) mappedResponse.get("ERROR");
-        if( !error.equals("OK") ){
-            logger.error("Calling competition failed with error {}", error);
+        if( errorCheck(error) )
             return;
-        }
 
         //Comparing received data do db data (standings and teams)
         for(Map<String, Object> mappedStanding : StandingList){
@@ -225,10 +238,8 @@ public class FootballApiCaller {
 
         //Checking for ERROR
         String error = (String) mappedResponse.get("ERROR");
-        if( !error.equals("OK") ){
-            logger.error("Calling today matches failed with error {}", error);
+        if( errorCheck(error) )
             return;
-        }
 
         //Comparing received data do db data (matches and matchEvents)
         for (Map<String, Object> mappedMatch : matchList) {
@@ -338,10 +349,8 @@ public class FootballApiCaller {
 
         //Checking for ERROR
         String error = (String) mappedResponse.get("ERROR");
-        if( !error.equals("OK") ){
-            logger.error("Calling competition failed with error {}", error);
+        if( errorCheck(error) )
             return;
-        }
 
         //Comparing received data do db data (matches and matchEvents)
         for (Map<String, Object> mappedMatch : matchList) {
@@ -401,5 +410,28 @@ public class FootballApiCaller {
         }
 
         logger.info("Running against fixturesURL finished.");
+    }
+
+    private boolean errorCheck(String error){
+        if (error.equals("This IP is not recognized. Please make sure to enter the allowed IPs in the Account area")){
+            logger.error("IP not recognized. Switching API_KEY to {}", API_KEY_MW);
+            String API_KEY = API_KEY_MW;
+
+            String COMPETITION_URL = "http://football-api.com/api/?Action=competitions&APIKey=" +API_KEY;
+            String STANDINGS_URL = "http://football-api.com/api/?Action=standings&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID;
+            String TODAY_MATCHES_URL = "http://football-api.com/api/?Action=today&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID;
+            String FIXTURES_URL = "http://football-api.com/api/?Action=fixtures&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID; //&from_date=d.m.y&to_date=d.m.y
+
+            this.COMPETITION_URL = COMPETITION_URL;
+            this.STANDINGS_URL = STANDINGS_URL;
+            this.TODAY_MATCHES_URL = TODAY_MATCHES_URL;
+            this.FIXTURES_URL = FIXTURES_URL;
+            this.callCompetition();
+            return true;
+        }else if( !error.equals("OK") ) {
+            logger.error("Call failed with error {}", error);
+            return true;
+        }
+        return false;
     }
 }

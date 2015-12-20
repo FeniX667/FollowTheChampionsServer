@@ -15,8 +15,9 @@ public class AndroidNotificationPusher {
 
     public void pushToDevices(List<String> deviceTokens, Message message) {
         if( deviceTokens.size() > 0)
+            logger.info("Pushing to " + deviceTokens.size() + " Android devices.");
             try {
-                logger.info("Sending multicast ANDROID= " + message);
+                logger.info("GCM: Sending message {}", message);
 
                 Sender sender = new Sender( apiKey );
                 sender.sendNoRetry(message, deviceTokens);

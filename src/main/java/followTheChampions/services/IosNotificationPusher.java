@@ -2,6 +2,7 @@ package followTheChampions.services;
 
 import com.notnoop.apns.*;
 import com.notnoop.apns.internal.ReconnectPolicies;
+import com.notnoop.apns.internal.Utilities;
 import followTheChampions.dto.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,8 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.logging.Level;
 
 @Service
 public class IosNotificationPusher {
@@ -31,27 +35,19 @@ public class IosNotificationPusher {
         if( deviceTokens.size() > 0)
             try {
                 pushMessage(deviceTokens, notification);
-                logger.info("Notification sent: " + notification.getPayload());
             } catch (Exception ex) {
                 logger.error("Error sending message(s).", ex);
             }
     }
 
     private void pushMessage(List<String> deviceTokens, Notification notification) throws Exception {
-        for (String token : deviceTokens) {
-            logger.debug("sending to " + token);
-        }
-        logger.info("Pushing to " + deviceTokens.size() + " devices.");
-
+        logger.info("Pushing to " + deviceTokens.size() + " IOS devices.");
         String json = null;
         if ( deviceTokens.size() > 0 && !StringUtils.isEmpty( notification.getPayload()) ) {
             checkConnection();
 
             json = notification.toJson();
-            logger.debug("json:\n" + json);
             int length = json.length();
-
-            logger.debug("payload size=" + length);
 
             if (length > 256) {
                 logger.warn("Payload is too large (" + length + " bytes); shortening!");
@@ -59,14 +55,13 @@ public class IosNotificationPusher {
 
             for (String token : deviceTokens) {
                 try {
-                    logger.debug("Sending to " + token);
                     apnsService.push(token, json);
                 } catch (Exception ex) {
                     logger.warn("Exception while sending to " + token, ex.getMessage());
                 }
             }
         } else {
-            logger.debug("NOT SENDING " + json);
+            logger.error("NOT SENDING " + json);
         }
     }
 
@@ -103,22 +98,32 @@ public class IosNotificationPusher {
                 .withDelegate(new ApnsDelegate() {
                     @Override
                     public void messageSent(ApnsNotification apnsNotification) {
-
+                        String payload = new String(apnsNotification.getPayload(), StandardCharsets.UTF_8);
+                        String deviceToken = Utilities.encodeHex(apnsNotification.getDeviceToken());
+                        logger.info("APNS: Device {} should receive {}", deviceToken, payload);
                     }
 
                     @Override
-                    public void messageSendFailed(ApnsNotification apnsNotification, Throwable throwable) {
+                    public void messageSendFailed(ApnsNotification apnsNotification, Throwable e) {
+                        String registrationId = Utilities.encodeHex(apnsNotification.getDeviceToken());
+                        logger.warn("Message NOT delivered to {}" + registrationId, e);
 
                     }
 
                     @Override
                     public void connectionClosed(DeliveryError deliveryError, int i) {
-
+                        logger.info("Connection closed, delivery error {}", deliveryError.toString());
                     }
                 })
                 .withReconnectPolicy(new ReconnectPolicies.EveryHalfHour())
                 .withCert(stream, certPassword)
                 .withGatewayDestination(gatewayHost, gatewayPort)
                 .build();
+    }
+
+    @PreDestroy
+    public void dispose() {
+        logger.info("Destroying apnsService");
+                apnsService.stop();
     }
 }
