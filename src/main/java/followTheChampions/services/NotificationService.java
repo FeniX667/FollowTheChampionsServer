@@ -51,6 +51,7 @@ public class NotificationService {
         logger.info("Preparing notification");
 
         List<RegisteredDevice> deviceList = getDevicesWhichFavourThis( match );
+        logger.info("Sending to {} devices", deviceList.size());
 
         iosNotificationPusher.pushToDevices( getTokensFromDevices(deviceList, RegisteredDevice.Type.IOS), createIosAlert(match) );
         androidNotificationPusher.pushToDevices( getTokensFromDevices(deviceList, RegisteredDevice.Type.Android), createAndroidMessage(match) );
@@ -86,7 +87,8 @@ public class NotificationService {
         aps.put("category", "NEW_MESSAGE_CATEGORY");
         aps.put("alert", event.getMatch().getMatchName() + event.getType() );
 
-        notification.getPayload().put("match", event.getMatch().getId().toString());
+        notification.getPayload().put("aps", aps);
+        notification.getPayload().put("matchId", event.getMatch().getId().toString());
         notification.getPayload().put("time", event.getMinute());
         notification.getPayload().put("whichTeam", event.getWhichTeam());
         notification.getPayload().put("type", event.getType());
@@ -101,24 +103,28 @@ public class NotificationService {
 
         Map<String, String> aps = new HashMap<>();
         aps.put("category", "NEW_MESSAGE_CATEGORY");
-        aps.put("alert", match.getMatchName() );
 
         String status = match.getStatus();
         switch(match.getStatus()){
-            case "started" :
+            case "1" :
                 aps.put("alert", match.getMatchName() + " started! " );
                 break;
 
-            case "hf" :
-                aps.put("alert", match.getMatchName() + " half time. " );
+            case "HT" :
+                aps.put("alert", match.getMatchName() + " first half finished. " );
                 break;
 
-            case "ft" :
+            case "46" :
+                aps.put("alert", match.getMatchName() + " second half started. " );
+                break;
+
+            case "FT" :
                 aps.put("alert", match.getMatchName() + " is finished. " );
                 break;
         }
 
-        notification.getPayload().put("match", match);
+        notification.getPayload().put("aps", aps);
+        notification.getPayload().put("matchId", match.getId().toString());
 
         return notification;
     }
@@ -149,11 +155,15 @@ public class NotificationService {
                 message = match.getMatchName() + " started! ";
                 break;
 
+            case "HT" :
+                message = match.getMatchName() + " first half finished. " ;
+                break;
+
             case "46" :
                 message = match.getMatchName() + " second half started. " ;
                 break;
 
-            case "ft" :
+            case "FT" :
                 message = match.getMatchName() + " is finished. " ;
                 break;
         }
@@ -171,7 +181,7 @@ public class NotificationService {
 
     //@Async
     public void fakeNotification(){
-        logger.info("Preparing notification");
+        logger.info("Preparing single notification");
 
         MatchEvent event = new MatchEvent();
         event.setId(99L);
@@ -183,5 +193,18 @@ public class NotificationService {
         event.setMatch( matchRepository.getById(2L) );
 
         sendAsNotification(event);
+    }
+
+    public void fakeStatusNotification() {
+        logger.info("Preparing status notification");
+        Match match = matchRepository.getById(1L);
+        match.setStatus("1");
+        sendAsNotification(match);
+
+        match.setStatus("46");
+        sendAsNotification(match);
+
+        match.setStatus("FT");
+        sendAsNotification(match);
     }
 }

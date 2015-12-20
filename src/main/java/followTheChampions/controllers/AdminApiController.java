@@ -158,6 +158,18 @@ public class AdminApiController {
         return response;
     }
 
+
+    @RequestMapping("/testMatchStatusAlert")
+    public ResponseEntity<String> testMatchStatusAlert() throws ParseException {
+        logger.info("Testing match alert");
+        ResponseEntity<String> response;
+
+        notificationService.fakeStatusNotification();
+
+        response = new ResponseEntity<>(HttpStatus.OK);
+        return response;
+    }
+
     @RequestMapping("/getRegisteredDevices")
     public @ResponseBody
     Iterable<RegisteredDevice> getRegisteredDevices() {

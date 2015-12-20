@@ -238,8 +238,11 @@ public class FootballApiCaller {
             Team visitorTeam = teamRepository.getById(Long.parseLong(mappedMatch.get("match_visitorteam_id").toString()));
 
             if (existingMatch != null) {
-                if( !existingMatch.getStatus().equals( mappedMatch.get("match_status").toString() ) ){
-                    logger.info("Stary {}, nowy {}", existingMatch.getStatus(), mappedMatch.get("match_status").toString());
+                if( (mappedMatch.get("match_status").toString().equals("1") ||
+                        (mappedMatch.get("match_status").toString().equals("46") ||
+                                ( mappedMatch.get("match_status").toString().equals("FT") && !existingMatch.getStatus().equals("FT") ) ||
+                                ( mappedMatch.get("match_status").toString().equals("HT") && !existingMatch.getStatus().equals("HT") )
+                        ))){
                     isStatusUpdated = true;
                     logger.info("Status match updated");
                 }
@@ -272,7 +275,6 @@ public class FootballApiCaller {
 
                     if (existingEvent != null) {
                         isNew = false;
-                        logger.info("Event updated");
                     } else {
                         existingEvent = new MatchEvent();
                         existingEvent.setId(Long.valueOf(mappedEvent.get("event_id").toString()));
@@ -296,7 +298,7 @@ public class FootballApiCaller {
                 }
         }
 
-        logger.info("Running against fixturesURL finished.");
+        logger.info("Running against TodayMatchesURL finished.");
     }
 
     //http://football-api.com/api/?Action=fixtures&APIKey=[YOUR_API_KEY]&comp_id=[COMPETITION]&&match_date=[DATE_IN_d.m.Y_FORMAT]
@@ -375,7 +377,6 @@ public class FootballApiCaller {
 
                     if (existingEvent != null) {
                         isNew = false;
-                        logger.info("Event updated");
                     } else {
                         existingEvent = new MatchEvent();
                         existingEvent.setId(Long.valueOf(mappedEvent.get("event_id").toString()));
