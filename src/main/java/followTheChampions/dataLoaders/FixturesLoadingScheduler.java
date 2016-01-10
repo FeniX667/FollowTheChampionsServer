@@ -22,10 +22,12 @@ public class FixturesLoadingScheduler {
 
     @Scheduled(fixedRate = interval, initialDelay = delay)
     public void timeout() {
-        logger.info("Loading fixtures from -7d to +14d");
-        DateTime fromDate = DateTime.now().minusDays(7);
-        DateTime toDate = DateTime.now().plusDays(14);
+        if( footballApiCaller.isInitialized && footballApiCaller.scheduleFlag ) {
+            logger.info("Loading fixtures from -7d to +14d");
+            DateTime fromDate = DateTime.now().minusDays(7);
+            DateTime toDate = DateTime.now().plusDays(14);
 
-        footballApiCaller.callFixtures(fromDate, toDate);
+            footballApiCaller.callFixtures(fromDate, toDate);
+        }
     }
 }

@@ -68,6 +68,17 @@ public class AdminApiController {
         return response;
     }
 
+    @RequestMapping("/switchScheduleFlag")
+    public ResponseEntity<String> switchScheduleFlag() {
+        ResponseEntity<String> response;
+
+        firstApiCaller.setScheduleFlag( !firstApiCaller.scheduleFlag );
+        logger.info("ScheduleFlag set to: {}", firstApiCaller.scheduleFlag);
+
+        response = new ResponseEntity<>(HttpStatus.OK);
+        return response;
+    }
+
     @RequestMapping("/callStandings")
     public ResponseEntity<String> callStandings() {
         ResponseEntity<String> response;

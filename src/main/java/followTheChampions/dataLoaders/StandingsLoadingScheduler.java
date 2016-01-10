@@ -21,7 +21,9 @@ public class StandingsLoadingScheduler {
 
     @Scheduled(fixedRate = interval, initialDelay = delay)
     public void timeout() {
-        logger.info("Loading standings");
-        footballApiCaller.callStandings();
+        if( footballApiCaller.isInitialized && footballApiCaller.scheduleFlag ) {
+            logger.info("Loading standings");
+            footballApiCaller.callStandings();
+        }
     }
 }

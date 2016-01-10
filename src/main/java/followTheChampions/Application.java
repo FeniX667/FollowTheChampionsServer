@@ -31,11 +31,4 @@ public class Application {
         }*/
 
     }
-
-    @Bean
-    public CommandLineRunner demo(DataFiller dataFiller) {
-        return (args) -> {
-            dataFiller.initiateData();
-        };
-    }
 }

@@ -21,7 +21,12 @@ public class FootballApiCaller {
 
     public final static String API_KEY_S="64bc654e-5926-9cfe-384b14a72f1a"; // Solskiego
     public final static String API_KEY_MW="8b38ab51-3460-9ea3-73f697a040e3";   // Magda
+    public final static String API_KEY_H="7cfa2765-85ff-9442-caa3ac169ebe";   // Heroku
+    public static String CURR_API_KEY;
     public final static String COMP_ID="1204";
+
+    public static Boolean isInitialized = Boolean.FALSE;
+    public static Boolean scheduleFlag = Boolean.FALSE;
 
     public static String COMPETITION_URL;
     public static String STANDINGS_URL;
@@ -59,13 +64,13 @@ public class FootballApiCaller {
     NotificationService notificationService;
 
     @PostConstruct
-    public void initDb(){
-        String API_KEY = API_KEY_S;
+    public void initFootbalApi(){
+        CURR_API_KEY = API_KEY_S;
 
-        String COMPETITION_URL = "http://football-api.com/api/?Action=competitions&APIKey=" +API_KEY;
-        String STANDINGS_URL = "http://football-api.com/api/?Action=standings&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID;
-        String TODAY_MATCHES_URL = "http://football-api.com/api/?Action=today&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID;
-        String FIXTURES_URL = "http://football-api.com/api/?Action=fixtures&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID; //&from_date=d.m.y&to_date=d.m.y
+        String COMPETITION_URL = "http://football-api.com/api/?Action=competitions&APIKey=" +CURR_API_KEY;
+        String STANDINGS_URL = "http://football-api.com/api/?Action=standings&APIKey=" +CURR_API_KEY+ "&comp_id=" +COMP_ID;
+        String TODAY_MATCHES_URL = "http://football-api.com/api/?Action=today&APIKey=" +CURR_API_KEY+ "&comp_id=" +COMP_ID;
+        String FIXTURES_URL = "http://football-api.com/api/?Action=fixtures&APIKey=" +CURR_API_KEY+ "&comp_id=" +COMP_ID; //&from_date=d.m.y&to_date=d.m.y
 
         this.COMPETITION_URL = COMPETITION_URL;
         this.STANDINGS_URL = STANDINGS_URL;
@@ -73,7 +78,13 @@ public class FootballApiCaller {
         this.FIXTURES_URL = FIXTURES_URL;
 
         this.callCompetition();
-        this.callStandings();
+        if( !isInitialized ){
+            this.callCompetition();
+        }
+        if( !isInitialized ){
+            this.callCompetition();
+        }
+
     }
 
     public void callCompetition() {
@@ -125,6 +136,41 @@ public class FootballApiCaller {
         }
 
         logger.info("Running against competitionURL finished.");
+
+        isInitialized = Boolean.TRUE;
+    }
+
+
+    private boolean errorCheck(String error){
+        if (error.equals("This IP is not recognized. Please make sure to enter the allowed IPs in the Account area")){
+            if( CURR_API_KEY.equals(API_KEY_S) ){
+                logger.error("IP not recognized. Switching API_KEY to {}", API_KEY_MW);
+                CURR_API_KEY = API_KEY_MW;
+            }
+            else if( CURR_API_KEY.equals(API_KEY_MW) ){
+                logger.error("IP not recognized. Switching API_KEY to {}", API_KEY_H);
+                CURR_API_KEY = API_KEY_H;
+            }else{
+                logger.error("IP still not recognized. Shame. Switching API_KEY to {}", API_KEY_S);
+            }
+
+
+            String COMPETITION_URL = "http://football-api.com/api/?Action=competitions&APIKey=" +CURR_API_KEY;
+            String STANDINGS_URL = "http://football-api.com/api/?Action=standings&APIKey=" +CURR_API_KEY+ "&comp_id=" +COMP_ID;
+            String TODAY_MATCHES_URL = "http://football-api.com/api/?Action=today&APIKey=" +CURR_API_KEY+ "&comp_id=" +COMP_ID;
+            String FIXTURES_URL = "http://football-api.com/api/?Action=fixtures&APIKey=" +CURR_API_KEY+ "&comp_id=" +COMP_ID; //&from_date=d.m.y&to_date=d.m.y
+
+            this.COMPETITION_URL = COMPETITION_URL;
+            this.STANDINGS_URL = STANDINGS_URL;
+            this.TODAY_MATCHES_URL = TODAY_MATCHES_URL;
+            this.FIXTURES_URL = FIXTURES_URL;
+            logger.error("Current api key {}", CURR_API_KEY);
+            return true;
+        }else if( !error.equals("OK") ) {
+            logger.error("Call failed with error {}", error);
+            return true;
+        }
+        return false;
     }
 
     //http://football-api.com/api/?Action=standings&APIKey=[YOUR_API_KEY]&comp_id=[COMPETITION]
@@ -260,7 +306,7 @@ public class FootballApiCaller {
 
             } else {
                 existingMatch = new Match();
-                existingMatch.setMatchEventList(new LinkedList<>());
+                existingMatch.setMatchEventList(new LinkedList<MatchEvent>());
                 existingMatch.setId(Long.valueOf(mappedMatch.get("match_id").toString()));
                 logger.info("Saving as new match");
             }
@@ -363,7 +409,7 @@ public class FootballApiCaller {
                 logger.info("Match updated");
             } else {
                 existingMatch = new Match();
-                existingMatch.setMatchEventList(new LinkedList<>());
+                existingMatch.setMatchEventList(new LinkedList<MatchEvent>());
                 existingMatch.setId(Long.valueOf(mappedMatch.get("match_id").toString()));
                 logger.info("Saving as new match");
             }
@@ -412,26 +458,7 @@ public class FootballApiCaller {
         logger.info("Running against fixturesURL finished.");
     }
 
-    private boolean errorCheck(String error){
-        if (error.equals("This IP is not recognized. Please make sure to enter the allowed IPs in the Account area")){
-            logger.error("IP not recognized. Switching API_KEY to {}", API_KEY_MW);
-            String API_KEY = API_KEY_MW;
-
-            String COMPETITION_URL = "http://football-api.com/api/?Action=competitions&APIKey=" +API_KEY;
-            String STANDINGS_URL = "http://football-api.com/api/?Action=standings&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID;
-            String TODAY_MATCHES_URL = "http://football-api.com/api/?Action=today&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID;
-            String FIXTURES_URL = "http://football-api.com/api/?Action=fixtures&APIKey=" +API_KEY+ "&comp_id=" +COMP_ID; //&from_date=d.m.y&to_date=d.m.y
-
-            this.COMPETITION_URL = COMPETITION_URL;
-            this.STANDINGS_URL = STANDINGS_URL;
-            this.TODAY_MATCHES_URL = TODAY_MATCHES_URL;
-            this.FIXTURES_URL = FIXTURES_URL;
-            this.callCompetition();
-            return true;
-        }else if( !error.equals("OK") ) {
-            logger.error("Call failed with error {}", error);
-            return true;
-        }
-        return false;
+    public static void setScheduleFlag(Boolean scheduleFlag) {
+        FootballApiCaller.scheduleFlag = scheduleFlag;
     }
 }
