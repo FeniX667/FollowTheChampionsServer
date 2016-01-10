@@ -85,6 +85,11 @@ public class FootballApiCaller {
             this.callCompetition();
         }
 
+        this.callStandings();
+
+        DateTime fromDate = DateTime.now().minusDays(14);
+        DateTime toDate = DateTime.now();
+        this.callFixtures(fromDate, toDate);
     }
 
     public void callCompetition() {
