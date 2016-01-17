@@ -96,6 +96,20 @@ public class NotificationService {
         aps.put("category", "NEW_MESSAGE_CATEGORY");
         aps.put("alert", event.getMatch().getMatchName() + event.getType() );
 
+        switch(event.getType()){
+            case "goal":
+                aps.put("sound", GOAL_SOUND);
+                break;
+
+            case "yellowcard":
+                aps.put("sound", CARD_SOUND);
+                break;
+
+            case "redcard":
+                aps.put("sound", CARD_SOUND);
+                break;
+        }
+
         notification.getPayload().put("aps", aps);
         notification.getPayload().put("matchId", event.getMatch().getId().toString());
         notification.getPayload().put("time", event.getMinute());
@@ -104,19 +118,6 @@ public class NotificationService {
         notification.getPayload().put("player", event.getPlayerName());
         notification.getPayload().put("result", event.getResult());
 
-        switch(event.getType()){
-            case "goal":
-                notification.getPayload().put("sound", GOAL_SOUND);
-                break;
-
-            case "yellowcard":
-                notification.getPayload().put("sound", CARD_SOUND);
-                break;
-
-            case "redcard":
-                notification.getPayload().put("sound", CARD_SOUND);
-                break;
-        }
 
 
         return notification;
@@ -132,22 +133,26 @@ public class NotificationService {
         switch(match.getStatus()){
             case "1" :
                 aps.put("alert", match.getMatchName() + " started! " );
-                aps.put("sound", this.HALF_START_SOUND);
+                aps.put("sound", "default");
+                notification.getPayload().put("type", "matchStart");
                 break;
 
             case "HT" :
                 aps.put("alert", match.getMatchName() + " first half finished. " );
                 aps.put("sound", this.FIRST_HALF_END_SOUND);
+                notification.getPayload().put("type", "halfEnd");
                 break;
 
             case "46" :
                 aps.put("alert", match.getMatchName() + " second half started. " );
                 aps.put("sound", this.HALF_START_SOUND);
+                notification.getPayload().put("type", "halfStart");
                 break;
 
             case "FT" :
                 aps.put("alert", match.getMatchName() + " is finished. " );
                 aps.put("sound", this.MATCH_END_SOUND);
+                notification.getPayload().put("type", "matchEnd");
                 break;
         }
 
@@ -300,8 +305,5 @@ public class NotificationService {
 
         match.setStatus("FT");
         sendAsNotification(match);
-
-        matchEventRepository.delete(1L);
-        matchEventRepository.delete(2L);
     }
 }
