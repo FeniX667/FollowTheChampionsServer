@@ -25,11 +25,11 @@ public class NotificationService {
     private final static Logger logger = LoggerFactory
             .getLogger(NotificationService.class);
 
-    private static String CARD_SOUND = "card_sound.mp3";
-    private static String GOAL_SOUND = "goal_sound.mp3";
-    private static String HALF_START_SOUND = "half_start_sound.mp3";
-    private static String FIRST_HALF_END_SOUND = "first_half_end_sound.mp3";
-    private static String MATCH_END_SOUND = "match_end_sound.mp3";
+    private static String CARD_SOUND = "card_sound.wav";
+    private static String GOAL_SOUND = "goal_sound.wav";
+    private static String HALF_START_SOUND = "half_start_sound.wav";
+    private static String FIRST_HALF_END_SOUND = "first_half_end_sound.wav";
+    private static String MATCH_END_SOUND = "match_end_sound.wav";
 
     @Autowired
     IosNotificationPusher iosNotificationPusher;
@@ -269,8 +269,8 @@ public class NotificationService {
         fakeMatchEvent2.setPlayerName("Malarinhio");
         fakeMatchEvent2.setType("yellowcard");
 
-        matchEventRepository.save(fakeMatchEvent);
-        match.getMatchEventList().add(fakeMatchEvent);
+        matchEventRepository.save(fakeMatchEvent2);
+        match.getMatchEventList().add(fakeMatchEvent2);
 
         sendAsNotification(fakeMatchEvent2);
 
